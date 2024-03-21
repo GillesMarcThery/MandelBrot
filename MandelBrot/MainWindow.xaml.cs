@@ -1,4 +1,5 @@
-﻿using System.Runtime.ConstrainedExecution;
+﻿using System.Diagnostics;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -8,6 +9,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -24,7 +26,31 @@ namespace MandelBrot
             Interval = new TimeSpan(0, 0, 0, 0, 500),
             IsEnabled = false
         };
-        double iteration_max = 80;
+        MandelbrotColors mandelBrotColors;
+        class MandelbrotColors
+        {
+            public List<SolidColorBrush> colors = [];
+            public MandelbrotColors(int max_iterations)
+            {
+                Random rnd = new Random();
+                for (int i = 0; i < max_iterations; i++)
+                    colors.Add(new SolidColorBrush(Color.FromRgb((byte)rnd.Next(0, 255), (byte)rnd.Next(0, 255), (byte)rnd.Next(0, 255))));
+            }
+        }
+        struct Rectangle(Point TopLeft, Point BottomRight)
+        {
+            public Point TopLeft = TopLeft;
+            public Point BottomRight = BottomRight;
+            public double Width
+            {
+                get { return BottomRight.X - TopLeft.X; }
+            }
+            public double Height
+            {
+                get { return TopLeft.Y - BottomRight.Y; }
+            }
+        }
+        int iteration_max = 80;
         MandelBrot_Navigation navigation = new();
         //Point coinSuperieurGaucheInitial = new(-2, 1.2);
         //Point coinInferieurDroitInitial = new(0.5, -1.2);
@@ -32,36 +58,33 @@ namespace MandelBrot
         //Point coinInferieurDroit = new(0.5, -1.2);
         class MandelBrot_Navigation
         {
-            Point coinSuperieurGaucheInitial = new(-2, 1.2);
-            Point coinInferieurDroitInitial = new(0.5, -1.2);
+            Point InitialTopLeftCorner = new(-2, 1.2);
+            Size s = new Size(2.5, 2.4);
+            Point InitialBottomRightCorner = new(0.5, -1.2);
             public Point temporaryUpperLeftCorner;
-            List<Rect> myCollection = [];
+            List<Rectangle> myCollection = [];
             public int index = 0;
             public MandelBrot_Navigation()
             {
-                myCollection.Add(new Rect(coinSuperieurGaucheInitial, coinInferieurDroitInitial));
+                myCollection.Add(new Rectangle(InitialTopLeftCorner, InitialBottomRightCorner));
             }
             public void Add_Rectangle(Point p1, Point p2)
             {
                 if (p1 != p2)
-                    myCollection.Add(new Rect(p1, p2));
+                    myCollection.Add(new Rectangle(p1, p2));
             }
             public void Supp_Rectangle(Point p1, Point p2)
             {
-                myCollection.Remove(new Rect(p1, p2));
+                myCollection.Remove(new Rectangle(p1, p2));
                 if (index == myCollection.Count) index--;
             }
-            public Point CoinSuperieurGauche
+            public Point TopLeftCorner
             {
-                get { return new Point(myCollection[index].X, myCollection[index].Y); }
+                get { return myCollection[index].TopLeft; }
             }
-            public Point CoinInferieurDroit
+            public Point BottomRightCorner
             {
-                get
-                {
-                    Rect r = myCollection[index];
-                    return new Point(r.X + r.Width, r.Y + r.Height);
-                }
+                get { return myCollection[index].BottomRight; }
             }
             public int Rewind
             {
@@ -83,16 +106,14 @@ namespace MandelBrot
             {
                 get
                 {
-                    Rect r = myCollection[index];
-                    return r.Width;
+                    return myCollection[index].Width;
                 }
             }
             public double Height
             {
                 get
                 {
-                    Rect r = myCollection[index];
-                    return r.Height;
+                    return myCollection[index].Height;
                 }
             }
         }
@@ -106,7 +127,8 @@ namespace MandelBrot
         List<ZZZZ> maCollection = [];
         public MainWindow()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            mandelBrotColors = new MandelbrotColors(iteration_max);
             timer.Tick += timer_Tick;
         }
 
@@ -134,11 +156,12 @@ namespace MandelBrot
             {
                 Stroke = b,
                 X1 = p1.X + deltaX,
-                Y1 = p1.Y + deltaY,
+                Y1 = deltaY - p1.Y,
                 X2 = p2.X + deltaX,
-                Y2 = p2.Y + deltaY,
+                Y2 = deltaY - p2.Y,
                 StrokeThickness = 1
             };
+            //Debug.WriteLine(canvasLine.X1 + ", " + canvasLine.Y1 + "-->" + canvasLine.X2 + ", " + canvasLine.Y2);
             _ = myCanvas.Children.Add(canvasLine);
         }
         void DrawXAxis()
@@ -244,8 +267,19 @@ namespace MandelBrot
             myCanvas.Children.Clear();
             this.Title = "Render in progress...";
             foreach (ZZZZ z in maCollection)
-                DrawLine(new Point(z.x_start, z.y), new Point(z.x_end, z.y), new SolidColorBrush(Color.FromRgb(0, 0, (byte)(100 + (byte)(z.divergence - 1) * (255 - 100) / (iteration_max - 1)))));
-
+            {
+                //Byte redLevel = (byte)(100 + (byte)(z.divergence - 1) * (255 - 100) / (iteration_max - 1));
+                Byte redLevel = (Byte)(255 - (byte)((z.divergence - 1) * 255 / (iteration_max - 1)));
+                //DrawLine(new Point(z.x_start, z.y), new Point(z.x_end, z.y), new SolidColorBrush(Color.FromRgb(0, 0, redLevel)));
+                DrawLine(new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
+                //Debug.WriteLine(z.divergence);
+                //Debug.WriteLine(z.x_start + ", " + z.y + "-->" + z.x_end + ", " + z.y);
+            }
+            WriteOnCanvas(2, 2, Math.Round(myCanvas.ActualWidth).ToString() + " x " + Math.Round(myCanvas.ActualHeight).ToString() + " {" + (myCanvas.ActualWidth / myCanvas.ActualHeight).ToString("#.###") + "}");
+            WriteOnCanvas(2, 14, "p1 (" + navigation.TopLeftCorner.ToString() + ")");
+            WriteOnCanvas(2, 26, "p2 (" + navigation.BottomRightCorner.ToString() + ")");
+            WriteOnCanvas(2, 38, navigation.Width.ToString("E3") + " x " + navigation.Height.ToString("E3") + " {" + (navigation.Width / navigation.Height).ToString("#.###") + "}");
+            WriteOnCanvas(2, 50, maCollection.Count.ToString());
             this.Title = "Render done";
         }
         /// <summary>
@@ -259,11 +293,11 @@ namespace MandelBrot
             this.Title = "Calculation in progress...";
             for (double y = myCanvas.ActualHeight / 2; y > -myCanvas.ActualHeight / 2; y--)
             {
-                ZZZZ tmp = new ZZZZ(-myCanvas.ActualWidth / 2, y, 0, Calcul_Divergence(-myCanvas.ActualWidth / 2, y, navigation.CoinSuperieurGauche.X, navigation.CoinSuperieurGauche.Y, width, height).divergence);
+                ZZZZ tmp = new ZZZZ(-myCanvas.ActualWidth / 2, y, 0, Calcul_Divergence(-myCanvas.ActualWidth / 2, y, navigation.TopLeftCorner.X, navigation.TopLeftCorner.Y, width, height).divergence);
 
                 for (double x = -myCanvas.ActualWidth / 2; x < myCanvas.ActualWidth / 2; x++)
                 {
-                    Result_Calcul_Divergence r = Calcul_Divergence(x, y, navigation.CoinSuperieurGauche.X, navigation.CoinSuperieurGauche.Y, width, height);
+                    Result_Calcul_Divergence r = Calcul_Divergence(x, y, navigation.TopLeftCorner.X, navigation.TopLeftCorner.Y, width, height);
                     if (r.divergence != tmp.divergence)
                     {
                         tmp.x_end = x - 1;
@@ -295,10 +329,6 @@ namespace MandelBrot
             this.Title = "Resize done.";
             FillCollection();
             Render();
-            WriteOnCanvas(2, 2, Math.Round(myCanvas.ActualWidth).ToString() + " x " + Math.Round(myCanvas.ActualHeight).ToString() + " {" + (myCanvas.ActualWidth / myCanvas.ActualHeight).ToString("#.###") + "}");
-
-            Label_ReelDef.Content = width.ToString("E3") + " x " + height.ToString("E3") + " {" + (width / height).ToString("#.###") + "}";
-            Label_Count.Content = maCollection.Count.ToString();
         }
         private void myCanvas_MouseMove(object sender, MouseEventArgs e)
         {
@@ -309,19 +339,19 @@ namespace MandelBrot
             double y_pix = deltaY - position.Y;
             double width = navigation.Width;
             double height = navigation.Height;
-            double module = Calcul_Divergence(x_pix, y_pix, navigation.CoinSuperieurGauche.X, navigation.CoinSuperieurGauche.Y, width, height).module;
-            double iter = Calcul_Divergence(x_pix, y_pix, navigation.CoinSuperieurGauche.X, navigation.CoinSuperieurGauche.Y, width, height).divergence;
+            double module = Calcul_Divergence(x_pix, y_pix, navigation.TopLeftCorner.X, navigation.TopLeftCorner.Y, width, height).module;
+            double iter = Calcul_Divergence(x_pix, y_pix, navigation.TopLeftCorner.X, navigation.TopLeftCorner.Y, width, height).divergence;
             double x_reel, y_reel;
 
             if (width / height >= myCanvas.ActualWidth / myCanvas.ActualHeight)
             {
-                x_reel = navigation.CoinSuperieurGauche.X + (width / myCanvas.ActualWidth) * x_pix + width / 2;
-                y_reel = navigation.CoinSuperieurGauche.Y + (height / myCanvas.ActualWidth) * y_pix - height / 2;
+                x_reel = navigation.TopLeftCorner.X + (width / myCanvas.ActualWidth) * x_pix + width / 2;
+                y_reel = navigation.TopLeftCorner.Y + (height / myCanvas.ActualWidth) * y_pix - height / 2;
             }
             else
             {
-                x_reel = navigation.CoinSuperieurGauche.X + (width / myCanvas.ActualHeight) * x_pix + width / 2;
-                y_reel = navigation.CoinSuperieurGauche.Y + (height / myCanvas.ActualHeight) * y_pix - height / 2;
+                x_reel = navigation.TopLeftCorner.X + (width / myCanvas.ActualHeight) * x_pix + width / 2;
+                y_reel = navigation.TopLeftCorner.Y + (height / myCanvas.ActualHeight) * y_pix - height / 2;
             }
             Label_PixelsXY.Content = "x = " + Math.Round(x_pix).ToString() + " ; y = " + Math.Round(y_pix).ToString();
             Label_ReelXY.Content = "x = " + x_reel.ToString("E") + " ; y = " + y_reel.ToString("E");
@@ -333,7 +363,7 @@ namespace MandelBrot
             Point position = e.GetPosition(this);
             Point p = Pixel2Real(position);
 
-            navigation.temporaryUpperLeftCorner= new Point(p.X, p.Y);   
+            navigation.temporaryUpperLeftCorner = new Point(p.X, p.Y);
         }
         Point Pixel2Real(Point position)
         {
@@ -347,13 +377,13 @@ namespace MandelBrot
 
             if (width / height >= myCanvas.ActualWidth / myCanvas.ActualHeight)
             {
-                p.X = navigation.CoinSuperieurGauche.X + (width / myCanvas.ActualWidth) * x_pix + width / 2;
-                p.Y = navigation.CoinSuperieurGauche.Y + (height / myCanvas.ActualWidth) * y_pix - height / 2;
+                p.X = navigation.TopLeftCorner.X + (width / myCanvas.ActualWidth) * x_pix + width / 2;
+                p.Y = navigation.TopLeftCorner.Y + (height / myCanvas.ActualWidth) * y_pix - height / 2;
             }
             else
             {
-                p.X = navigation.CoinSuperieurGauche.X + (width / myCanvas.ActualHeight) * x_pix + width / 2;
-                p.Y = navigation.CoinSuperieurGauche.Y + (height / myCanvas.ActualHeight) * y_pix - height / 2;
+                p.X = navigation.TopLeftCorner.X + (width / myCanvas.ActualHeight) * x_pix + width / 2;
+                p.Y = navigation.TopLeftCorner.Y + (height / myCanvas.ActualHeight) * y_pix - height / 2;
             }
             return p;
         }
@@ -364,12 +394,9 @@ namespace MandelBrot
             Point p = Pixel2Real(position);
 
             navigation.Add_Rectangle(navigation.temporaryUpperLeftCorner, p);
-            double width = navigation.Width;
-            double height = navigation.Height;
+            navigation.index++;
             FillCollection();
             Render();
-            Label_ReelDef.Content = width.ToString("E3") + " x " + height.ToString("E3") + " {" + (width / height).ToString("#.###") + "}";
-            Label_Count.Content = maCollection.Count.ToString();
         }
     }
 }

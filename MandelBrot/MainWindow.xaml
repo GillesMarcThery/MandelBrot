@@ -8,13 +8,6 @@
         Title="MainWindow" Height="400" Width="600">
     <DockPanel>
         <StatusBar DockPanel.Dock="Bottom">
-
-            <Label Name="Label_PixelsDef" Content="xx"></Label>
-            <Separator />
-            <Label Name="Label_ReelDef" Content="xx"></Label>
-            <Separator />
-            <Label Name="Label_Count" Content="xx"></Label>
-            <Separator />
             <Label Name="Label_PixelsXY" Content="xx"></Label>
             <Separator />
             <Label Name="Label_ReelXY" Content="xx"></Label>
