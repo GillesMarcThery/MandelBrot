@@ -1,0 +1,27 @@
+﻿<Window x:Class="MandelBrot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MandelBrot"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="400" Width="600">
+    <DockPanel>
+        <StatusBar DockPanel.Dock="Bottom">
+
+            <Label Name="Label_PixelsDef" Content="xx"></Label>
+            <Separator />
+            <Label Name="Label_ReelDef" Content="xx"></Label>
+            <Separator />
+            <Label Name="Label_Count" Content="xx"></Label>
+            <Separator />
+            <Label Name="Label_PixelsXY" Content="xx"></Label>
+            <Separator />
+            <Label Name="Label_ReelXY" Content="xx"></Label>
+            <Separator />
+            <Label Name="Label_Divergence" Content="xx"></Label>
+        </StatusBar>
+
+        <Canvas DockPanel.Dock="Top" Name="myCanvas" Background="AntiqueWhite" Loaded="myCanvas_Loaded" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp"/>
+    </DockPanel>
+</Window>
