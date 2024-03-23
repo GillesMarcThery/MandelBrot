@@ -34,7 +34,7 @@ namespace MandelBrot
         public MainWindow()
         {
             InitializeComponent();
-            mandelBrotSet = new MandelBrotSet(myCanvas, 80);
+            mandelBrotSet = new MandelBrotSet();
             mandelBrotColors = new MandelbrotColors(80);
             timer.Tick += timer_Tick;
         }
@@ -113,8 +113,8 @@ namespace MandelBrot
                 //Debug.WriteLine(z.x_start + ", " + z.y + "-->" + z.x_end + ", " + z.y);
             }
             WriteStringOnCanvas(2, 2, Math.Round(myCanvas.ActualWidth).ToString() + " x " + Math.Round(myCanvas.ActualHeight).ToString() + " {" + (myCanvas.ActualWidth / myCanvas.ActualHeight).ToString("#.###") + "}");
-            WriteStringOnCanvas(2, 14, "p1 (" + navigation.TopLeftCorner.ToString() + ")");
-            WriteStringOnCanvas(2, 26, "p2 (" + navigation.BottomRightCorner.ToString() + ")");
+            WriteStringOnCanvas(2, 14, "p1 (" + navigation.UpperLeft.ToString() + ")");
+            WriteStringOnCanvas(2, 26, "p2 (" + navigation.BottomRight.ToString() + ")");
             WriteStringOnCanvas(2, 38, navigation.Width.ToString("E3") + " x " + navigation.Height.ToString("E3") + " {" + (navigation.Width / navigation.Height).ToString("#.###") + "}");
             WriteStringOnCanvas(2, 50, mandelBrotSet.mandelBrotLines.Count.ToString());
             this.Title = "Render done";
@@ -138,76 +138,86 @@ namespace MandelBrot
             timer.IsEnabled = false;
             //Resize ended (based on 500 ms debaounce time
             this.Title = "Resize done.";
-            mandelBrotSet.FillCollection(navigation);
+            mandelBrotSet.FillCollection(navigation, new Size(myCanvas.ActualWidth, myCanvas.ActualHeight), 80);
             Render();
         }
         private void myCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             Point position = e.GetPosition(this);
-            double deltaX = myCanvas.ActualWidth / 2;
-            double deltaY = myCanvas.ActualHeight / 2;
-            double x_pix = position.X - deltaX;
-            double y_pix = deltaY - position.Y;
-            double width = navigation.Width;
-            double height = navigation.Height;
-            double module =mandelBrotSet.DivergenceCalculation(x_pix, y_pix, navigation.TopLeftCorner.X, navigation.BottomRightCorner.Y, width, height).module;
-            double iter =mandelBrotSet.DivergenceCalculation(x_pix, y_pix, navigation.TopLeftCorner.X, navigation.BottomRightCorner.Y, width, height).divergence;
-            double x_reel, y_reel;
+            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
+            double module = mandelBrotSet.DivergenceCalculation(new Point(pointOnCanvas.X, pointOnCanvas.Y), navigation.UpperLeft, navigation.BottomRight, canvas, 80).module;
+            double iter = mandelBrotSet.DivergenceCalculation(new Point(pointOnCanvas.X, pointOnCanvas.Y), navigation.UpperLeft, navigation.BottomRight, canvas, 80).divergence;
 
-            if (width / height >= myCanvas.ActualWidth / myCanvas.ActualHeight)
-            {
-                x_reel = navigation.TopLeftCorner.X + (width / myCanvas.ActualWidth) * x_pix + width / 2;
-                y_reel = navigation.TopLeftCorner.Y + (height / myCanvas.ActualWidth) * y_pix - height / 2;
-            }
-            else
-            {
-                x_reel = navigation.TopLeftCorner.X + (width / myCanvas.ActualHeight) * x_pix + width / 2;
-                y_reel = navigation.TopLeftCorner.Y + (height / myCanvas.ActualHeight) * y_pix - height / 2;
-            }
-            Label_PixelsXY.Content = "x = " + Math.Round(x_pix).ToString() + " ; y = " + Math.Round(y_pix).ToString();
-            Label_ReelXY.Content = "x = " + x_reel.ToString("E") + " ; y = " + y_reel.ToString("E");
+            Point p = mandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
+
+            Label_PixelsXY.Content = "x = " + Math.Round(pointOnCanvas.X).ToString() + " ; y = " + Math.Round(pointOnCanvas.Y).ToString();
+            Label_ReelXY.Content = "x = " + p.X.ToString("E") + " ; y = " + p.Y.ToString("E");
             Label_Divergence.Content = " div = " + iter.ToString() + " mod = " + module.ToString();
         }
 
         private void myCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point position = e.GetPosition(this);
-            Point p = Pixel2Real(position);
+            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
+            Point p = mandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
 
             navigation.temporaryUpperLeftCorner = new Point(p.X, p.Y);
-        }
-        Point Pixel2Real(Point position)
-        {
-            double deltaX = myCanvas.ActualWidth / 2;
-            double deltaY = myCanvas.ActualHeight / 2;
-            double x_pix = position.X - deltaX;
-            double y_pix = deltaY - position.Y;
-            double width = navigation.Width;
-            double height = navigation.Height;
-            Point p = new();
-
-            if (width / height >= myCanvas.ActualWidth / myCanvas.ActualHeight)
-            {
-                p.X = navigation.TopLeftCorner.X + (width / myCanvas.ActualWidth) * x_pix + width / 2;
-                p.Y = navigation.TopLeftCorner.Y + (height / myCanvas.ActualWidth) * y_pix - height / 2;
-            }
-            else
-            {
-                p.X = navigation.TopLeftCorner.X + (width / myCanvas.ActualHeight) * x_pix + width / 2;
-                p.Y = navigation.TopLeftCorner.Y + (height / myCanvas.ActualHeight) * y_pix - height / 2;
-            }
-            return p;
         }
 
         private void myCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             Point position = e.GetPosition(this);
-            Point p = Pixel2Real(position);
+            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
+            Point p = mandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
 
             navigation.Add_Rectangle(navigation.temporaryUpperLeftCorner, p);
             navigation.index++;
-            mandelBrotSet.FillCollection(navigation);
+            mandelBrotSet.FillCollection(navigation, canvas, 80);
             Render();
         }
+        #region navigation
+        private void Button_Rewind_Click(object sender, RoutedEventArgs e)
+        {
+            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            if (navigation.Rewind())
+            {
+                mandelBrotSet.FillCollection(navigation, canvas, 80);
+                Render();
+            }
+        }
+
+        private void Button_Previous_Click(object sender, RoutedEventArgs e)
+        {
+            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            if (navigation.Previous())
+            {
+                mandelBrotSet.FillCollection(navigation, canvas, 80);
+                Render();
+            }
+        }
+
+        private void Button_Next_Click(object sender, RoutedEventArgs e)
+        {
+            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            if (navigation.Next())
+            {
+                mandelBrotSet.FillCollection(navigation, canvas, 80);
+                Render();
+            }
+        }
+
+        private void Button_End_Click(object sender, RoutedEventArgs e)
+        {
+            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            if (navigation.End())
+            {
+                mandelBrotSet.FillCollection(navigation, canvas, 80);
+                Render();
+            }
+        }
     }
+    #endregion
 }

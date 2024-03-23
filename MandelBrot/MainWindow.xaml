@@ -23,6 +23,14 @@
             <MenuItem Header="_About">
             </MenuItem>
         </Menu>
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button x:Name="Button_Rewind" Content="Rewind" Click="Button_Rewind_Click"/>
+                <Button x:Name="Button_Previous" Content="Previous" Click="Button_Previous_Click"/>
+                <Button x:Name="Button_Next" Content="Next" Click="Button_Next_Click"/>
+                <Button x:Name="Button_End" Content="End" Click="Button_End_Click"/>
+            </ToolBar>
+        </ToolBarTray>
         <StatusBar DockPanel.Dock="Bottom">
             <Label Name="Label_PixelsXY" Content="xx"></Label>
             <Separator />
@@ -30,7 +38,8 @@
             <Separator />
             <Label Name="Label_Divergence" Content="xx"></Label>
         </StatusBar>
-
-        <Canvas DockPanel.Dock="Top" Name="myCanvas" Background="AntiqueWhite" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp"/>
+        <DockPanel>
+            <Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp"/>
+        </DockPanel>
     </DockPanel>
 </Window>

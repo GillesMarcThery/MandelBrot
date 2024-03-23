@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows;
 
 namespace MandelBrot
 {
@@ -19,18 +14,29 @@ namespace MandelBrot
         public double x_end = x_end;
         public double divergence = divergence;
     }
+
     internal class MandelBrotSet
     {
-        Canvas myCanvas;
-        int max_iterations = 80;
-
         public List<MandelBrotHorizontalLine> mandelBrotLines = [];
-        public MandelBrotSet(Canvas myCanvas, int max_iterations)
+        public Point Pixel2Real(Point point, Point UpperLeft, Point BottomRight, Size canvas)
         {
-            this.myCanvas = myCanvas;
-            this.max_iterations = max_iterations;
+            Point result = new Point();
+            double width = BottomRight.X - UpperLeft.X;
+            double height = UpperLeft.Y - BottomRight.Y;
+
+            if (canvas.Height * width / height < canvas.Width)
+            {
+                result.X = UpperLeft.X + (height / canvas.Height) * (point.X + canvas.Height / 2);
+                result.Y = BottomRight.Y + (height / canvas.Height) * (point.Y + canvas.Height / 2);
+            }
+            else
+            {
+                result.X = UpperLeft.X + (width / canvas.Width) * (point.X + canvas.Width / 2);
+                result.Y = BottomRight.Y + (height / canvas.Width) * (point.Y + canvas.Width / 2);
+            }
+            return result;
         }
-        public ResultDivergenceCalculation DivergenceCalculation(double x_pix, double y_pix, double x_min, double y_min, double largeur, double hauteur)
+        public ResultDivergenceCalculation DivergenceCalculation(Point point, Point UpperLeft, Point BottomRight, Size canvas, int max_iterations)
         {
             double z_r = 0;
             double z_i = 0;
@@ -39,28 +45,9 @@ namespace MandelBrot
             double c_r;
             double c_i;
 
-            //if (largeur / hauteur >= myCanvas.ActualWidth / myCanvas.ActualHeight)
-            //{
-            //    c_r = x_min + (largeur / myCanvas.ActualWidth) * x_pix + largeur / 2;
-            //    c_i = y_max + (hauteur / myCanvas.ActualWidth) * y_pix - hauteur / 2;
-            //}
-            //else
-            //{
-            //    c_r = x_min + (largeur / myCanvas.ActualHeight) * x_pix + largeur / 2;
-            //    c_i = y_max + (hauteur / myCanvas.ActualHeight) * y_pix - hauteur / 2;
-            //}
-
-            if (myCanvas.ActualHeight*largeur/hauteur <myCanvas.ActualWidth)
-            {
-                c_r = x_min + (hauteur / myCanvas.ActualHeight) * (x_pix + myCanvas.ActualHeight / 2);
-                c_i = y_min + (hauteur / myCanvas.ActualHeight) * (y_pix + myCanvas.ActualHeight / 2);
-            }
-            else
-            {
-                c_r = x_min + (largeur / myCanvas.ActualWidth) * (x_pix + myCanvas.ActualWidth / 2);
-                c_i = y_min + (hauteur / myCanvas.ActualWidth) * (y_pix + myCanvas.ActualWidth / 2);
-            }
-
+            Point p = Pixel2Real(point, UpperLeft, BottomRight, canvas);
+            c_r = p.X;
+            c_i = p.Y;
             do
             {
                 double tmp = z_r;
@@ -73,27 +60,24 @@ namespace MandelBrot
 
             return new ResultDivergenceCalculation(module, i);
         }
-        public void FillCollection(MandelBrot_Navigation navigation)
+        public void FillCollection(MandelBrot_Navigation navigation, Size canvas, int max_iterations)
         {
-            double width = navigation.Width;
-            double height = navigation.Height;
             mandelBrotLines.Clear();
-            for (double y = myCanvas.ActualHeight / 2; y > -myCanvas.ActualHeight / 2; y--)
+            for (double y = canvas.Height / 2; y > -canvas.Height / 2; y--)
             {
-                MandelBrotHorizontalLine tmp = new MandelBrotHorizontalLine(-myCanvas.ActualWidth / 2, y, 0, DivergenceCalculation(-myCanvas.ActualWidth / 2, y, navigation.TopLeftCorner.X, navigation.BottomRightCorner.Y, width, height).divergence);
-
-                for (double x = -myCanvas.ActualWidth / 2; x < myCanvas.ActualWidth / 2; x++)
+                MandelBrotHorizontalLine tmp = new MandelBrotHorizontalLine(-canvas.Width / 2, y, 0, DivergenceCalculation(new Point(-canvas.Width / 2, y), navigation.UpperLeft, navigation.BottomRight, canvas, max_iterations).divergence);
+                for (double x = -canvas.Width / 2; x < canvas.Width / 2; x++)
                 {
-                    ResultDivergenceCalculation r = DivergenceCalculation(x, y, navigation.TopLeftCorner.X, navigation.BottomRightCorner.Y, width, height);
+                    ResultDivergenceCalculation r = DivergenceCalculation(new Point(x, y), navigation.UpperLeft, navigation.BottomRight, canvas, max_iterations);
                     if (r.divergence != tmp.divergence)
                     {
-                        tmp.x_end = x - 1;
+                        tmp.x_end = x;
                         if (tmp.divergence != max_iterations)
                             mandelBrotLines.Add(tmp);
                         tmp = new MandelBrotHorizontalLine(x, y, 0, r.divergence);
                     }
                 }
-                tmp.x_end = -1 + myCanvas.ActualWidth / 2;
+                tmp.x_end = canvas.Width / 2;
                 if (tmp.divergence != max_iterations)
                     mandelBrotLines.Add(tmp);
             }

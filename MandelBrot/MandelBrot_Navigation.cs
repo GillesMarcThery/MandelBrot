@@ -40,29 +40,38 @@ namespace MandelBrot
             myCollection.Remove(new Rectangle(p1, p2));
             if (index == myCollection.Count) index--;
         }
-        public Point TopLeftCorner
+
+        public Point UpperLeft
         {
             get { return myCollection[index].TopLeft; }
         }
-        public Point BottomRightCorner
+        public Point BottomRight
         {
             get { return myCollection[index].BottomRight; }
         }
-        public int Rewind
+        public bool Rewind()
         {
-            set { index = 0; }
+            if (index == 0) return false;
+            index = 0;
+            return true;
         }
-        public int End
+        public bool End()
         {
-            set { index = myCollection.Count - 1; }
+            if (index == myCollection.Count - 1) return false;
+            index = myCollection.Count - 1;
+            return true;
         }
-        public int Previous
+        public bool Previous()
         {
-            set { if (index != 0) index--; }
+            if (index == 0) return false;
+            index--;
+            return true;
         }
-        public int Next
+        public bool Next()
         {
-            set { if (index != myCollection.Count - 1) index++; }
+            if (index == myCollection.Count - 1) return false;
+            index++;
+            return true;
         }
         public double Width
         {
