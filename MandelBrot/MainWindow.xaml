@@ -7,6 +7,22 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="400" Width="600">
     <DockPanel>
+        <Menu DockPanel.Dock="Top"  >
+            <MenuItem Header="File">
+                <MenuItem Header="_New File" />
+                <MenuItem Header="_Open File"  />
+                <MenuItem Name="MenuItem_Save_File" Header="_Save File" />
+                <MenuItem Name="MenuItem_SaveAs_File" Header="_SaveAs File"  />
+                <Separator />
+                <MenuItem Header="Recent" x:Name="menuItem_recents_Files" />
+                <Separator />
+                <MenuItem Header="_Exit" />
+            </MenuItem>
+            <MenuItem Header="_Parameter">
+            </MenuItem>
+            <MenuItem Header="_About">
+            </MenuItem>
+        </Menu>
         <StatusBar DockPanel.Dock="Bottom">
             <Label Name="Label_PixelsXY" Content="xx"></Label>
             <Separator />
@@ -15,6 +31,6 @@
             <Label Name="Label_Divergence" Content="xx"></Label>
         </StatusBar>
 
-        <Canvas DockPanel.Dock="Top" Name="myCanvas" Background="AntiqueWhite" Loaded="myCanvas_Loaded" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp"/>
+        <Canvas DockPanel.Dock="Top" Name="myCanvas" Background="AntiqueWhite" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp"/>
     </DockPanel>
 </Window>
