@@ -1,19 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using static MandelBrot.MandelBrotSet;
 
 namespace MandelBrot
 {
@@ -30,6 +21,7 @@ namespace MandelBrot
         MandelbrotColors mandelBrotColors;
         MandelBrotSet mandelBrotSet;
         MandelBrot_Navigation navigation = new();
+        int id_Selection_Rectangle;
 
         public MainWindow()
         {
@@ -43,7 +35,7 @@ namespace MandelBrot
         {
             double deltaX = myCanvas.ActualWidth / 2;
             double deltaY = myCanvas.ActualHeight / 2;
-            Line canvasLine = new Line
+            Line canvasLine = new()
             {
                 Stroke = b,
                 X1 = p1.X + deltaX,
@@ -54,6 +46,26 @@ namespace MandelBrot
             };
             //Debug.WriteLine(canvasLine.X1 + ", " + canvasLine.Y1 + "-->" + canvasLine.X2 + ", " + canvasLine.Y2);
             _ = myCanvas.Children.Add(canvasLine);
+        }
+        int DrawWhiteRectangle(Point upperLeft, Point bottomRight)
+        {
+            double width = bottomRight.X - upperLeft.X;
+            double height = upperLeft.Y - bottomRight.Y;
+            if (width < 0 || height < 0) return 0;
+
+            double deltaX = myCanvas.ActualWidth / 2;
+            double deltaY = myCanvas.ActualHeight / 2;
+            System.Windows.Shapes.Rectangle rect = new()
+            {
+                Stroke = Brushes.White,
+                Width = bottomRight.X - upperLeft.X,
+                Height = upperLeft.Y - bottomRight.Y,
+                StrokeThickness = 1
+            };
+            //Debug.WriteLine(canvasLine.X1 + ", " + canvasLine.Y1 + "-->" + canvasLine.X2 + ", " + canvasLine.Y2);
+            Canvas.SetLeft(rect, upperLeft.X + deltaX);
+            Canvas.SetTop(rect, deltaY - upperLeft.Y);
+            return myCanvas.Children.Add(rect);
         }
         void DrawXAxis()
         {
@@ -102,6 +114,7 @@ namespace MandelBrot
         void Render()
         {
             myCanvas.Children.Clear();
+            //ss
             this.Title = "Render in progress...";
             foreach (MandelBrotHorizontalLine z in mandelBrotSet.mandelBrotLines)
             {
@@ -118,6 +131,10 @@ namespace MandelBrot
             WriteStringOnCanvas(2, 38, navigation.Width.ToString("E3") + " x " + navigation.Height.ToString("E3") + " {" + (navigation.Width / navigation.Height).ToString("#.###") + "}");
             WriteStringOnCanvas(2, 50, mandelBrotSet.mandelBrotLines.Count.ToString());
             this.Title = "Render done";
+        }
+        void RenderCapture()
+        {
+
         }
         /// <summary>
         ///  Si la divergence est au max, on pourrait ne rien mettre et laisser le background color...
@@ -144,8 +161,12 @@ namespace MandelBrot
         private void myCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             Point position = e.GetPosition(this);
+            //Debug.WriteLine(menu.ActualHeight);
+            //Debug.WriteLine(toolBarTray_navigation.ActualHeight);
+            //Debug.WriteLine(Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight));
+            position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
             Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
-            Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
+            Point pointOnCanvas = new(Math.Round(position.X - canvas.Width / 2), Math.Round(canvas.Height / 2 - position.Y));
             double module = mandelBrotSet.DivergenceCalculation(new Point(pointOnCanvas.X, pointOnCanvas.Y), navigation.UpperLeft, navigation.BottomRight, canvas, 80).module;
             double iter = mandelBrotSet.DivergenceCalculation(new Point(pointOnCanvas.X, pointOnCanvas.Y), navigation.UpperLeft, navigation.BottomRight, canvas, 80).divergence;
 
@@ -154,26 +175,40 @@ namespace MandelBrot
             Label_PixelsXY.Content = "x = " + Math.Round(pointOnCanvas.X).ToString() + " ; y = " + Math.Round(pointOnCanvas.Y).ToString();
             Label_ReelXY.Content = "x = " + p.X.ToString("E") + " ; y = " + p.Y.ToString("E");
             Label_Divergence.Content = " div = " + iter.ToString() + " mod = " + module.ToString();
+
+            navigation.temporaryBottomRight = new Point(p.X, p.Y);
+            if (navigation.status == Status.Capture)
+            {
+                Point upperLeft = MandelBrotSet.Real2Pixel(navigation.temporaryUpperLeft, navigation.UpperLeft, navigation.BottomRight, canvas);
+                Debug.WriteLine(upperLeft.X + ", " + upperLeft.Y + "  --->   " + pointOnCanvas.X + ", " + pointOnCanvas.Y);
+                if (id_Selection_Rectangle !=0) myCanvas.Children.RemoveAt(id_Selection_Rectangle);
+                id_Selection_Rectangle = DrawWhiteRectangle(upperLeft, pointOnCanvas);
+            }
         }
 
         private void myCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point position = e.GetPosition(this);
+            position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
             Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
             Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
             Point p = mandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
 
-            navigation.temporaryUpperLeftCorner = new Point(p.X, p.Y);
+            navigation.temporaryUpperLeft = new Point(p.X, p.Y);
+            navigation.status = Status.Capture;
         }
 
         private void myCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             Point position = e.GetPosition(this);
+            position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
             Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
             Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
             Point p = mandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
 
-            navigation.Add_Rectangle(navigation.temporaryUpperLeftCorner, p);
+            navigation.status = Status.None;
+            id_Selection_Rectangle = 0;
+            navigation.Add_Rectangle(navigation.temporaryUpperLeft, p);
             navigation.index++;
             mandelBrotSet.FillCollection(navigation, canvas, 80);
             Render();

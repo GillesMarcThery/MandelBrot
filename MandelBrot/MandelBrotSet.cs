@@ -36,6 +36,24 @@ namespace MandelBrot
             }
             return result;
         }
+        public static Point Real2Pixel(Point point, Point UpperLeft, Point BottomRight, Size canvas)
+        {
+            Point result = new();
+            double width = BottomRight.X - UpperLeft.X;
+            double height = UpperLeft.Y - BottomRight.Y;
+
+            if (canvas.Height * width / height < canvas.Width)
+            {
+                result.X = Math.Round((point.X - UpperLeft.X) * (canvas.Height / height) - canvas.Height / 2);
+                result.Y = Math.Round((point.Y - BottomRight.Y) * (canvas.Height / height) - canvas.Height / 2);
+            }
+            else
+            {
+                result.X = Math.Round((point.X - UpperLeft.X) * (canvas.Width / width) - canvas.Width / 2);
+                result.Y = Math.Round((point.Y - BottomRight.Y) * (canvas.Width / height) - canvas.Width / 2);
+            }
+            return result;
+        }
         public ResultDivergenceCalculation DivergenceCalculation(Point point, Point UpperLeft, Point BottomRight, Size canvas, int max_iterations)
         {
             double z_r = 0;

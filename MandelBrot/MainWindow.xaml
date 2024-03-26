@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="400" Width="600">
     <DockPanel>
-        <Menu DockPanel.Dock="Top"  >
+        <Menu x:Name="menu" DockPanel.Dock="Top"  >
             <MenuItem Header="File">
                 <MenuItem Header="_New File" />
                 <MenuItem Header="_Open File"  />
@@ -23,7 +23,7 @@
             <MenuItem Header="_About">
             </MenuItem>
         </Menu>
-        <ToolBarTray DockPanel.Dock="Top">
+        <ToolBarTray x:Name="toolBarTray_navigation" DockPanel.Dock="Top">
             <ToolBar>
                 <Button x:Name="Button_Rewind" Content="Rewind" Click="Button_Rewind_Click"/>
                 <Button x:Name="Button_Previous" Content="Previous" Click="Button_Previous_Click"/>
@@ -39,7 +39,7 @@
             <Label Name="Label_Divergence" Content="xx"></Label>
         </StatusBar>
         <DockPanel>
-            <Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp"/>
+            <Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp"/>
         </DockPanel>
     </DockPanel>
 </Window>

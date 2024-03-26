@@ -2,6 +2,11 @@
 
 namespace MandelBrot
 {
+    enum Status
+    {
+        None,
+        Capture
+    }
     struct Rectangle(Point TopLeft, Point BottomRight)
     {
         public Point TopLeft = TopLeft;
@@ -20,12 +25,17 @@ namespace MandelBrot
         //Point InitialTopLeftCorner = new(-2, 1.2);
         //Size s = new Size(2.5, 2.4);
         //Point InitialBottomRightCorner = new(0.5, -1.2);
-        Point InitialTopLeftCorner = new(-2.5, 2.5);
-        Size s = new Size(5, 5);
-        Point InitialBottomRightCorner = new(2.5, -2.5);
-        public Point temporaryUpperLeftCorner;
+        //Point InitialTopLeftCorner = new(-2.5, 2.5);
+        //Size s = new Size(5, 5);
+        //Point InitialBottomRightCorner = new(2.5, -2.5);
+        Point InitialTopLeftCorner = new(-2, 1.2);
+        Size s = new Size(2.5, 2.4);
+        Point InitialBottomRightCorner = new(0.5, -1.2);
+        public Point temporaryUpperLeft;
+        public Point temporaryBottomRight;
         List<Rectangle> myCollection = [];
         public int index = 0;
+        public Status status = Status.None;
         public MandelBrot_Navigation()
         {
             myCollection.Add(new Rectangle(InitialTopLeftCorner, InitialBottomRightCorner));
