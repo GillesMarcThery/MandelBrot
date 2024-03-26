@@ -170,7 +170,7 @@ namespace MandelBrot
             double module = mandelBrotSet.DivergenceCalculation(new Point(pointOnCanvas.X, pointOnCanvas.Y), navigation.UpperLeft, navigation.BottomRight, canvas, 80).module;
             double iter = mandelBrotSet.DivergenceCalculation(new Point(pointOnCanvas.X, pointOnCanvas.Y), navigation.UpperLeft, navigation.BottomRight, canvas, 80).divergence;
 
-            Point p = mandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
+            Point p = MandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
 
             Label_PixelsXY.Content = "x = " + Math.Round(pointOnCanvas.X).ToString() + " ; y = " + Math.Round(pointOnCanvas.Y).ToString();
             Label_ReelXY.Content = "x = " + p.X.ToString("E") + " ; y = " + p.Y.ToString("E");
@@ -192,7 +192,7 @@ namespace MandelBrot
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
             Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
             Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
-            Point p = mandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
+            Point p = MandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
 
             navigation.temporaryUpperLeft = new Point(p.X, p.Y);
             navigation.status = Status.Capture;
@@ -204,7 +204,7 @@ namespace MandelBrot
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
             Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
             Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
-            Point p = mandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
+            Point p = MandelBrotSet.Pixel2Real(pointOnCanvas, navigation.UpperLeft, navigation.BottomRight, canvas);
 
             navigation.status = Status.None;
             id_Selection_Rectangle = 0;
