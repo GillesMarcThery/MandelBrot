@@ -22,16 +22,19 @@ namespace MandelBrot
         public static Point Pixel2Real(Point point, Rectangle r, Size canvas)
         {
             Point result = new();
+            double yMiddle = (r.TopLeft.Y + r.BottomRight.Y) / 2;
+            double xMiddle = (r.TopLeft.X + r.BottomRight.X) / 2;
 
-            if (canvas.Height * r.Width / r.Height < canvas.Width)
+            if (canvas.Height * r.Width / r.Height <= canvas.Width)
             {
-                result.X = r.TopLeft.X + (r.Height / canvas.Height) * (point.X + canvas.Height / 2);
+                result.X = xMiddle + (r.Height / canvas.Height) * point.X;
                 result.Y = r.BottomRight.Y + (r.Height / canvas.Height) * (point.Y + canvas.Height / 2);
             }
             else
             {
                 result.X = r.TopLeft.X + (r.Width / canvas.Width) * (point.X + canvas.Width / 2);
-                result.Y = r.BottomRight.Y + (r.Width / canvas.Width) * (point.Y + canvas.Width / 2);
+                result.Y = yMiddle + (r.Width / canvas.Width) * point.Y;
+                //result.Y = r.BottomRight.Y + (r.Width / canvas.Width) * (point.Y + canvas.Width / 2);
                 //result.Y = BottomRight.Y + (height / canvas.Height) * (point.Y + canvas.Height / 2);
             }
             return result;
@@ -50,9 +53,9 @@ namespace MandelBrot
             }
             else
             {
-                //result.X = Math.Round((point.X - r.TopLeft.X) * (canvas.Width / r.Width) - canvas.Width / 2);
-                result.X = Math.Round((point.X - xMiddle) * (canvas.Width / r.Width));
-                result.Y = Math.Round((point.Y - r.BottomRight.Y) * (canvas.Width / r.Width) - canvas.Width / 2);
+                result.X = Math.Round((point.X - r.TopLeft.X) * (canvas.Width / r.Width) - canvas.Width / 2);
+                //result.X = Math.Round((point.X - xMiddle) * (canvas.Width / r.Width));
+                result.Y = Math.Round((point.Y - yMiddle) * (canvas.Width / r.Width));
             }
             return result;
         }
