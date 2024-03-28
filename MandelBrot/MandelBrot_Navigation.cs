@@ -19,19 +19,15 @@ namespace MandelBrot
         {
             get { return TopLeft.Y - BottomRight.Y; }
         }
+        public override string ToString() { return TopLeft.ToString() + "-->" + BottomRight.ToString(); }
     }
     internal class MandelBrot_Navigation
     {
         //Point InitialTopLeftCorner = new(-2, 1.2);
-        //Size s = new Size(2.5, 2.4);
         //Point InitialBottomRightCorner = new(0.5, -1.2);
-        //Point InitialTopLeftCorner = new(-2.5, 2.5);
-        //Size s = new Size(5, 5);
-        //Point InitialBottomRightCorner = new(2.5, -2.5);
-        Point InitialTopLeftCorner = new(-2, 1.2);
-        Size s = new Size(2.5, 2.4);
-        Point InitialBottomRightCorner = new(0.5, -1.2);
-        public Point temporaryUpperLeft;
+        Point InitialTopLeftCorner = new(-1.3, -0.2);
+        Point InitialBottomRightCorner = new(-0.5, -0.47);
+        public Point temporaryTopLeft;
         public Point temporaryBottomRight;
         List<Rectangle> myCollection = [];
         public int index = 0;
@@ -51,7 +47,7 @@ namespace MandelBrot
             if (index == myCollection.Count) index--;
         }
 
-        public Point UpperLeft
+        public Point TopLeft
         {
             get { return myCollection[index].TopLeft; }
         }
@@ -95,6 +91,13 @@ namespace MandelBrot
             get
             {
                 return myCollection[index].Height;
+            }
+        }
+        public Rectangle CurrentSelection
+        {
+            get
+            {
+                return myCollection[index];
             }
         }
     }
