@@ -23,10 +23,10 @@ namespace MandelBrot
     }
     internal class MandelBrot_Navigation
     {
-        //Point InitialTopLeftCorner = new(-2, 1.2);
-        //Point InitialBottomRightCorner = new(0.5, -1.2);
-        Point InitialTopLeftCorner = new(-1.3, -0.2);
-        Point InitialBottomRightCorner = new(-0.5, -0.47);
+        Point InitialTopLeftCorner = new(-2, 1.2);
+        Point InitialBottomRightCorner = new(0.5, -1.2);
+        //Point InitialTopLeftCorner = new(-1.3, -0.2);
+        //Point InitialBottomRightCorner = new(-0.5, -0.47);
         public Point temporaryTopLeft;
         public Point temporaryBottomRight;
         List<Rectangle> myCollection = [];

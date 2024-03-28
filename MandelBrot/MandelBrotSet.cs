@@ -42,10 +42,11 @@ namespace MandelBrot
             double yMiddle = (r.TopLeft.Y + r.BottomRight.Y) / 2;
             double xMiddle = (r.TopLeft.X + r.BottomRight.X) / 2;
 
-            if (canvas.Height * r.Width / r.Height > canvas.Width) // écran plus allongé que la sélection
+            if (canvas.Height * r.Width / r.Height <= canvas.Width) // écran plus allongé que la sélection
             {
-                result.X = Math.Round((point.X - r.TopLeft.X) * (canvas.Height / r.Height) - canvas.Height / 2);
-                result.Y = Math.Round((point.Y - yMiddle) * (canvas.Height / r.Height));
+                //result.X = Math.Round((point.X - r.TopLeft.X) * (canvas.Height / r.Height) - canvas.Height / 2);
+                result.X = Math.Round((point.X - xMiddle) * (canvas.Height / r.Height));
+                result.Y = Math.Round((point.Y - r.BottomRight.Y) * (canvas.Height / r.Height) - canvas.Height / 2);
             }
             else
             {
@@ -135,6 +136,9 @@ namespace MandelBrot
         public void FillCollection(MandelBrot_Navigation navigation, Size canvas, int max_iterations)
         {
             mandelBrotLines.Clear();
+            Debug.WriteLine("Canvas q=" + canvas.Height / canvas.Width);
+            Debug.WriteLine("Rectangle q=" + navigation.Height / navigation.Width);
+
             Point upperLeft_pix = Real2Pixel(navigation.TopLeft, navigation.CurrentSelection, canvas);
             Point bottom_Right_pix = Real2Pixel(navigation.BottomRight, navigation.CurrentSelection, canvas);
             double step_Y = navigation.Height / (upperLeft_pix.Y - bottom_Right_pix.Y);
