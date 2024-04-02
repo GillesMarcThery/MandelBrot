@@ -151,6 +151,7 @@ namespace MandelBrot
             {
                 Point firstPointOfLine_Real = new Point(navigation.TopLeft.X, y);
                 Point firstPointOfLine_Pixel = Real2Pixel(firstPointOfLine_Real, navigation.CurrentSelection, canvas);
+                //Debug.WriteLine("y= " + y+ " ; "+firstPointOfLine_Pixel.Y);
                 MandelBrotHorizontalLine tmp = new MandelBrotHorizontalLine(firstPointOfLine_Pixel, 0, DivergenceCalculation1(firstPointOfLine_Real, max_iterations).divergence);
                 for (double x = navigation.TopLeft.X; x < navigation.BottomRight.X; x += step_X)
                 {

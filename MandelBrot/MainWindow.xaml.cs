@@ -3,8 +3,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MandelBrot
 {
@@ -22,13 +25,16 @@ namespace MandelBrot
         MandelBrotSet mandelBrotSet;
         MandelBrot_Navigation navigation = new();
         int id_Selection_Rectangle;
-
+        private byte[] buffer = new byte[0];
+        private WriteableBitmap bitmap;
         public MainWindow()
         {
             InitializeComponent();
             mandelBrotSet = new MandelBrotSet();
             mandelBrotColors = new MandelbrotColors(80);
+            myImage.Source = bitmap;
             timer.Tick += timer_Tick;
+            myCanvas.IsEnabled = false;
         }
         #region Utils
         void DrawLine(Point p1, Point p2, Brush b)
@@ -46,6 +52,33 @@ namespace MandelBrot
             };
             //Debug.WriteLine(canvasLine.X1 + ", " + canvasLine.Y1 + "-->" + canvasLine.X2 + ", " + canvasLine.Y2);
             _ = myCanvas.Children.Add(canvasLine);
+        }
+        /// <summary>
+        /// Draw an horizontal line on the buffer
+        /// </summary>
+        /// <param name="buffer">buffer</param>
+        /// <param name="width">width of the image</param>
+        /// <param name="p1">Start point</param>
+        /// <param name="p2">End point</param>
+        /// <param name="b">Color</param>
+        void DrawHorizontalLineOnBuffer(byte[] buffer, Size s, Point p1, Point p2, Brush b)
+        {
+            // Converting Brush to Color
+            Color myColorFromBrush = ((SolidColorBrush)b).Color;
+            double X1 = p1.X + s.Width / 2;
+            double Y1 = s.Height / 2 - p1.Y;
+            double X2 = p2.X + s.Width / 2;
+            double Y2 = s.Height / 2 - p2.Y;
+            for (int i = (int)(3 * (s.Width * Y1 + X1)); i < (int)(3 * (s.Width * Y1 + X2)); i += 3)
+            {
+                try
+                {
+                    buffer[i] = myColorFromBrush.B;
+                    buffer[i + 1] = myColorFromBrush.G;
+                    buffer[i + 2] = myColorFromBrush.R;
+                }
+                catch  { }
+            }
         }
         int DrawWhiteRectangle(Point upperLeft, Point bottomRight)
         {
@@ -132,9 +165,15 @@ namespace MandelBrot
             WriteStringOnCanvas(2, 50, mandelBrotSet.mandelBrotLines.Count.ToString());
             this.Title = "Render done";
         }
-        void RenderCapture()
+        void Render1()
         {
+            this.Title = "Render in progress...";
+            foreach (MandelBrotHorizontalLine z in mandelBrotSet.mandelBrotLines)
+            {
+                DrawHorizontalLineOnBuffer(buffer, new Size(Math.Round(myDock.ActualWidth), Math.Round(myDock.ActualHeight)), new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
+            }
 
+            this.Title = "Render done";
         }
         /// <summary>
         ///  Si la divergence est au max, on pourrait ne rien mettre et laisser le background color...
@@ -149,14 +188,20 @@ namespace MandelBrot
         }
         void timer_Tick(object? sender, EventArgs e)
         {
-            double width = navigation.Width;
-            double height = navigation.Height;
-
             timer.IsEnabled = false;
+
+            int width = (int)myDock.ActualWidth;
+            int height = (int)myDock.ActualHeight;
+            buffer = new byte[3 * width * height];
+            bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
+
             //Resize ended (based on 500 ms debaounce time
             this.Title = "Resize done.";
-            mandelBrotSet.FillCollection(navigation, new Size(myCanvas.ActualWidth, myCanvas.ActualHeight), 80);
-            Render();
+            mandelBrotSet.FillCollection(navigation, new Size(width, height), 80);
+            //Render();
+            Render1();
+            bitmap.WritePixels(new Int32Rect(0, 0, width, height), buffer, 3 * width, 0);
+            myImage.Source = bitmap;
         }
         private void myCanvas_MouseMove(object sender, MouseEventArgs e)
         {
@@ -181,7 +226,7 @@ namespace MandelBrot
             {
                 Point upperLeft = MandelBrotSet.Real2Pixel(navigation.temporaryTopLeft, navigation.CurrentSelection, canvas);
                 Debug.WriteLine(upperLeft.X + ", " + upperLeft.Y + "  --->   " + pointOnCanvas.X + ", " + pointOnCanvas.Y);
-                if (id_Selection_Rectangle !=0) myCanvas.Children.RemoveAt(id_Selection_Rectangle);
+                if (id_Selection_Rectangle != 0) myCanvas.Children.RemoveAt(id_Selection_Rectangle);
                 id_Selection_Rectangle = DrawWhiteRectangle(upperLeft, pointOnCanvas);
             }
         }
