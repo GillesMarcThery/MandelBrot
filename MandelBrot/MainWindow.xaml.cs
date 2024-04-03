@@ -34,25 +34,8 @@ namespace MandelBrot
             mandelBrotColors = new MandelbrotColors(80);
             myImage.Source = bitmap;
             timer.Tick += timer_Tick;
-            myCanvas.IsEnabled = false;
         }
         #region Utils
-        void DrawLine(Point p1, Point p2, Brush b)
-        {
-            double deltaX = myCanvas.ActualWidth / 2;
-            double deltaY = myCanvas.ActualHeight / 2;
-            Line canvasLine = new()
-            {
-                Stroke = b,
-                X1 = p1.X + deltaX,
-                Y1 = deltaY - p1.Y,
-                X2 = p2.X + deltaX,
-                Y2 = deltaY - p2.Y,
-                StrokeThickness = 1
-            };
-            //Debug.WriteLine(canvasLine.X1 + ", " + canvasLine.Y1 + "-->" + canvasLine.X2 + ", " + canvasLine.Y2);
-            _ = myCanvas.Children.Add(canvasLine);
-        }
         /// <summary>
         /// Draw an horizontal line on the buffer
         /// </summary>
@@ -65,11 +48,8 @@ namespace MandelBrot
         {
             // Converting Brush to Color
             Color myColorFromBrush = ((SolidColorBrush)b).Color;
-            double X1 = p1.X + s.Width / 2;
-            double Y1 = s.Height / 2 - p1.Y;
-            double X2 = p2.X + s.Width / 2;
-            double Y2 = s.Height / 2 - p2.Y;
-            for (int i = (int)(3 * (s.Width * Y1 + X1)); i < (int)(3 * (s.Width * Y1 + X2)); i += 3)
+            //Debug.WriteLine(s.ToString()+"   DrawHorizontalLineOnBuffer Y=" + Y1);
+            for (int i = (int)(3 * (s.Width * p1.Y + p1.X)); i < (int)(3 * (s.Width * p1.Y + p2.X)); i += 3)
             {
                 try
                 {
@@ -77,102 +57,49 @@ namespace MandelBrot
                     buffer[i + 1] = myColorFromBrush.G;
                     buffer[i + 2] = myColorFromBrush.R;
                 }
-                catch  { }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                    break;
+                }
             }
         }
         int DrawWhiteRectangle(Point upperLeft, Point bottomRight)
         {
-            double width = bottomRight.X - upperLeft.X;
-            double height = upperLeft.Y - bottomRight.Y;
-            if (width < 0 || height < 0) return 0;
+            //double width = bottomRight.X - upperLeft.X;
+            //double height = upperLeft.Y - bottomRight.Y;
+            //if (width < 0 || height < 0) return 0;
 
-            double deltaX = myCanvas.ActualWidth / 2;
-            double deltaY = myCanvas.ActualHeight / 2;
-            System.Windows.Shapes.Rectangle rect = new()
-            {
-                Stroke = Brushes.White,
-                Width = bottomRight.X - upperLeft.X,
-                Height = upperLeft.Y - bottomRight.Y,
-                StrokeThickness = 1
-            };
-            //Debug.WriteLine(canvasLine.X1 + ", " + canvasLine.Y1 + "-->" + canvasLine.X2 + ", " + canvasLine.Y2);
-            Canvas.SetLeft(rect, upperLeft.X + deltaX);
-            Canvas.SetTop(rect, deltaY - upperLeft.Y);
-            return myCanvas.Children.Add(rect);
-        }
-        void DrawXAxis()
-        {
-            double deltaX = myCanvas.ActualWidth / 2;
-            double deltaY = myCanvas.ActualHeight / 2;
-            Line canvasLine = new Line
-            {
-                Stroke = new SolidColorBrush(Color.FromRgb(0, 255, 0)),
-                X1 = 0,
-                Y1 = deltaY,
-                X2 = myCanvas.ActualWidth,
-                Y2 = deltaY,
-                StrokeThickness = 1
-            };
-            _ = myCanvas.Children.Add(canvasLine);
-        }
-        void DrawYAxis()
-        {
-            double deltaX = myCanvas.ActualWidth / 2;
-            double deltaY = myCanvas.ActualHeight / 2;
-            Line canvasLine = new Line
-            {
-                //Stroke = new SolidColorBrush(Color.FromRgb(0, 255, 0)),
-                Stroke = Brushes.Chocolate,
-                X1 = deltaX,
-                Y1 = 0,
-                X2 = deltaX,
-                Y2 = myCanvas.ActualHeight,
-                StrokeThickness = 1
-            };
-            _ = myCanvas.Children.Add(canvasLine);
-        }
-        int WriteStringOnCanvas(double x, double y, string text)
-        {
-            TextBlock textBlock = new TextBlock
-            {
-                FontSize = 12,
-                Text = text,
-                Foreground = Brushes.White
-            };
-            Canvas.SetLeft(textBlock, x);
-            Canvas.SetTop(textBlock, y);
-            return myCanvas.Children.Add(textBlock);
+            //double deltaX = myCanvas.ActualWidth / 2;
+            //double deltaY = myCanvas.ActualHeight / 2;
+            //System.Windows.Shapes.Rectangle rect = new()
+            //{
+            //    Stroke = Brushes.White,
+            //    Width = bottomRight.X - upperLeft.X,
+            //    Height = upperLeft.Y - bottomRight.Y,
+            //    StrokeThickness = 1
+            //};
+            ////Debug.WriteLine(canvasLine.X1 + ", " + canvasLine.Y1 + "-->" + canvasLine.X2 + ", " + canvasLine.Y2);
+            //Canvas.SetLeft(rect, upperLeft.X + deltaX);
+            //Canvas.SetTop(rect, deltaY - upperLeft.Y);
+            //return myCanvas.Children.Add(rect);
+            return 1;
         }
         #endregion
-        void Render()
-        {
-            myCanvas.Children.Clear();
-            //ss
-            this.Title = "Render in progress...";
-            foreach (MandelBrotHorizontalLine z in mandelBrotSet.mandelBrotLines)
-            {
-                //Byte redLevel = (byte)(100 + (byte)(z.divergence - 1) * (255 - 100) / (iteration_max - 1));
-                //Byte redLevel = (Byte)(255 - (byte)((z.divergence - 1) * 255 / (iteration_max - 1)));
-                //DrawLine(new Point(z.x_start, z.y), new Point(z.x_end, z.y), new SolidColorBrush(Color.FromRgb(0, 0, redLevel)));
-                DrawLine(new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
-                //Debug.WriteLine(z.divergence);
-                //Debug.WriteLine(z.x_start + ", " + z.y + "-->" + z.x_end + ", " + z.y);
-            }
-            WriteStringOnCanvas(2, 2, Math.Round(myCanvas.ActualWidth).ToString() + " x " + Math.Round(myCanvas.ActualHeight).ToString() + " {" + (myCanvas.ActualWidth / myCanvas.ActualHeight).ToString("#.###") + "}");
-            WriteStringOnCanvas(2, 14, "p1 (" + navigation.TopLeft.ToString() + ")");
-            WriteStringOnCanvas(2, 26, "p2 (" + navigation.BottomRight.ToString() + ")");
-            WriteStringOnCanvas(2, 38, navigation.Width.ToString("E3") + " x " + navigation.Height.ToString("E3") + " {" + (navigation.Width / navigation.Height).ToString("#.###") + "}");
-            WriteStringOnCanvas(2, 50, mandelBrotSet.mandelBrotLines.Count.ToString());
-            this.Title = "Render done";
-        }
         void Render1()
         {
+            int width = (int)myDock.ActualWidth;
+            int height = (int)myDock.ActualHeight;
+            buffer = new byte[3 * width * height];
+            bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
+
             this.Title = "Render in progress...";
             foreach (MandelBrotHorizontalLine z in mandelBrotSet.mandelBrotLines)
             {
                 DrawHorizontalLineOnBuffer(buffer, new Size(Math.Round(myDock.ActualWidth), Math.Round(myDock.ActualHeight)), new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
             }
-
+            bitmap.WritePixels(new Int32Rect(0, 0, width, height), buffer, 3 * width, 0);
+            myImage.Source = bitmap;
             this.Title = "Render done";
         }
         /// <summary>
@@ -185,6 +112,7 @@ namespace MandelBrot
             timer.IsEnabled = true;
             timer.Stop();
             timer.Start();
+            Debug.WriteLine("Size Changed");
         }
         void timer_Tick(object? sender, EventArgs e)
         {
@@ -192,16 +120,12 @@ namespace MandelBrot
 
             int width = (int)myDock.ActualWidth;
             int height = (int)myDock.ActualHeight;
-            buffer = new byte[3 * width * height];
-            bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
 
             //Resize ended (based on 500 ms debaounce time
             this.Title = "Resize done.";
             mandelBrotSet.FillCollection(navigation, new Size(width, height), 80);
             //Render();
             Render1();
-            bitmap.WritePixels(new Int32Rect(0, 0, width, height), buffer, 3 * width, 0);
-            myImage.Source = bitmap;
         }
         private void myCanvas_MouseMove(object sender, MouseEventArgs e)
         {
@@ -210,24 +134,23 @@ namespace MandelBrot
             //Debug.WriteLine(toolBarTray_navigation.ActualHeight);
             //Debug.WriteLine(Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight));
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
-            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
-            Point pointOnCanvas = new(Math.Round(position.X - canvas.Width / 2), Math.Round(canvas.Height / 2 - position.Y));
-            double module = mandelBrotSet.DivergenceCalculation(new Point(pointOnCanvas.X, pointOnCanvas.Y), navigation.CurrentSelection, canvas, 80).module;
-            double iter = mandelBrotSet.DivergenceCalculation(new Point(pointOnCanvas.X, pointOnCanvas.Y), navigation.CurrentSelection, canvas, 80).divergence;
+            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            double module = mandelBrotSet.DivergenceCalculation(position, navigation.CurrentSelection, canvas, 80).module;
+            double iter = mandelBrotSet.DivergenceCalculation(position, navigation.CurrentSelection, canvas, 80).divergence;
 
-            Point p = MandelBrotSet.Pixel2Real(pointOnCanvas, navigation.CurrentSelection, canvas);
+            Point p = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
 
-            Label_PixelsXY.Content = "x = " + Math.Round(pointOnCanvas.X).ToString() + " ; y = " + Math.Round(pointOnCanvas.Y).ToString();
-            Label_ReelXY.Content = "x = " + p.X.ToString("E") + " ; y = " + p.Y.ToString("E");
+            Label_PixelsXY.Content =  Math.Round(position.X).ToString() + " ; " + Math.Round(position.Y).ToString();
+            Label_ReelXY.Content = "r = " + p.X.ToString("E") + " ; i = " + p.Y.ToString("E");
             Label_Divergence.Content = " div = " + iter.ToString() + " mod = " + module.ToString();
 
             navigation.temporaryBottomRight = new Point(p.X, p.Y);
             if (navigation.status == Status.Capture)
             {
                 Point upperLeft = MandelBrotSet.Real2Pixel(navigation.temporaryTopLeft, navigation.CurrentSelection, canvas);
-                Debug.WriteLine(upperLeft.X + ", " + upperLeft.Y + "  --->   " + pointOnCanvas.X + ", " + pointOnCanvas.Y);
-                if (id_Selection_Rectangle != 0) myCanvas.Children.RemoveAt(id_Selection_Rectangle);
-                id_Selection_Rectangle = DrawWhiteRectangle(upperLeft, pointOnCanvas);
+                Debug.WriteLine(upperLeft.X + ", " + upperLeft.Y + "  --->   " + position.X + ", " + position.Y);
+                //if (id_Selection_Rectangle != 0) myCanvas.Children.RemoveAt(id_Selection_Rectangle);
+                //id_Selection_Rectangle = DrawWhiteRectangle(upperLeft, pointOnCanvas);
             }
         }
 
@@ -235,11 +158,8 @@ namespace MandelBrot
         {
             Point position = e.GetPosition(this);
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
-            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
-            Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
-            Point p = MandelBrotSet.Pixel2Real(pointOnCanvas, navigation.CurrentSelection, canvas);
-
-            navigation.temporaryTopLeft = new Point(p.X, p.Y);
+            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            navigation.temporaryTopLeft = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
             navigation.status = Status.Capture;
         }
 
@@ -247,55 +167,54 @@ namespace MandelBrot
         {
             Point position = e.GetPosition(this);
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
-            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
-            Point pointOnCanvas = new(position.X - canvas.Width / 2, canvas.Height / 2 - position.Y);
-            Point p = MandelBrotSet.Pixel2Real(pointOnCanvas, navigation.CurrentSelection, canvas);
+            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            Point p = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
 
             navigation.status = Status.None;
             id_Selection_Rectangle = 0;
             navigation.Add_Rectangle(navigation.temporaryTopLeft, p);
             navigation.index++;
             mandelBrotSet.FillCollection(navigation, canvas, 80);
-            Render();
+            Render1();
         }
         #region navigation
         private void Button_Rewind_Click(object sender, RoutedEventArgs e)
         {
-            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
             if (navigation.Rewind())
             {
                 mandelBrotSet.FillCollection(navigation, canvas, 80);
-                Render();
+                Render1();
             }
         }
 
         private void Button_Previous_Click(object sender, RoutedEventArgs e)
         {
-            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
             if (navigation.Previous())
             {
                 mandelBrotSet.FillCollection(navigation, canvas, 80);
-                Render();
+                Render1();
             }
         }
 
         private void Button_Next_Click(object sender, RoutedEventArgs e)
         {
-            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
             if (navigation.Next())
             {
                 mandelBrotSet.FillCollection(navigation, canvas, 80);
-                Render();
+                Render1();
             }
         }
 
         private void Button_End_Click(object sender, RoutedEventArgs e)
         {
-            Size canvas = new(myCanvas.ActualWidth, myCanvas.ActualHeight);
+            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
             if (navigation.End())
             {
                 mandelBrotSet.FillCollection(navigation, canvas, 80);
-                Render();
+                Render1();
             }
         }
     }

@@ -38,9 +38,9 @@
             <Separator />
             <Label Name="Label_Divergence" Content="xx"></Label>
         </StatusBar>
-        <DockPanel Name="myDock">
-            <Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />
-            <Image Name="myImage" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg"/>
+        <DockPanel Name="myDock" SizeChanged="myCanvas_SizeChanged">
+            <!--<Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />-->
+            <Image Name="myImage" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp"/>
         </DockPanel>
     </DockPanel>
 </Window>
