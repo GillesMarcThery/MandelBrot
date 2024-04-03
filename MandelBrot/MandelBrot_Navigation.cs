@@ -39,7 +39,7 @@ namespace MandelBrot
         public void Add_Rectangle(Point p1, Point p2)
         {
             if (p1 != p2)
-                myCollection.Add(new Rectangle(p1, p2));
+                myCollection.Insert(index + 1, new Rectangle(p1, p2));
         }
         public void Supp_Rectangle(Point p1, Point p2)
         {
@@ -55,6 +55,8 @@ namespace MandelBrot
         {
             get { return myCollection[index].BottomRight; }
         }
+        public int Count()
+        { return myCollection.Count; }
         public bool Rewind()
         {
             if (index == 0) return false;

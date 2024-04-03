@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,6 +12,13 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace MandelBrot
 {
+    struct ColoredPoint(int index, byte blue, byte green, byte red)
+    {
+        public int index = index;
+        public byte Blue = blue;
+        public byte Red = red;
+        public byte Green = green;
+    }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -27,6 +35,7 @@ namespace MandelBrot
         int id_Selection_Rectangle;
         private byte[] buffer = new byte[0];
         private WriteableBitmap bitmap;
+        List<ColoredPoint> points = [];
         public MainWindow()
         {
             InitializeComponent();
@@ -44,7 +53,7 @@ namespace MandelBrot
         /// <param name="p1">Start point</param>
         /// <param name="p2">End point</param>
         /// <param name="b">Color</param>
-        void DrawHorizontalLineOnBuffer(byte[] buffer, Size s, Point p1, Point p2, Brush b)
+        void DrawHorizontalLineOnBuffer(Size s, Point p1, Point p2, Brush b)
         {
             // Converting Brush to Color
             Color myColorFromBrush = ((SolidColorBrush)b).Color;
@@ -64,26 +73,49 @@ namespace MandelBrot
                 }
             }
         }
-        int DrawWhiteRectangle(Point upperLeft, Point bottomRight)
+        ColoredPoint DrawPointOnBuffer(Size s, Point p, Brush b)
         {
-            //double width = bottomRight.X - upperLeft.X;
-            //double height = upperLeft.Y - bottomRight.Y;
-            //if (width < 0 || height < 0) return 0;
+            // Converting Brush to Color
+            Color myColorFromBrush = ((SolidColorBrush)b).Color;
+            //Debug.WriteLine(s.ToString()+"   DrawHorizontalLineOnBuffer Y=" + Y1);
+            int i = (int)(3 * (s.Width * p.Y + p.X));
+            ColoredPoint cp = new ColoredPoint(i, buffer[i], buffer[i + 1], buffer[i + 2]);
+            buffer[i] = myColorFromBrush.B;
+            buffer[i + 1] = myColorFromBrush.G;
+            buffer[i + 2] = myColorFromBrush.R;
+            return cp;
+        }
 
-            //double deltaX = myCanvas.ActualWidth / 2;
-            //double deltaY = myCanvas.ActualHeight / 2;
-            //System.Windows.Shapes.Rectangle rect = new()
-            //{
-            //    Stroke = Brushes.White,
-            //    Width = bottomRight.X - upperLeft.X,
-            //    Height = upperLeft.Y - bottomRight.Y,
-            //    StrokeThickness = 1
-            //};
-            ////Debug.WriteLine(canvasLine.X1 + ", " + canvasLine.Y1 + "-->" + canvasLine.X2 + ", " + canvasLine.Y2);
-            //Canvas.SetLeft(rect, upperLeft.X + deltaX);
-            //Canvas.SetTop(rect, deltaY - upperLeft.Y);
-            //return myCanvas.Children.Add(rect);
-            return 1;
+        void DrawWhiteRectangle(Size s, Point upperLeft, Point bottomRight)
+        {
+            double width = bottomRight.X - upperLeft.X;
+            double height = bottomRight.Y - upperLeft.Y;
+            if (width < 0 || height < 0) return;
+
+            points.Clear();
+            // Up horizontal
+            for (double x = upperLeft.X; x < bottomRight.X; x++)
+                points.Add(DrawPointOnBuffer(s, new Point(x, upperLeft.Y), Brushes.White));
+            // Bottom horizontal
+            for (double x = upperLeft.X; x < bottomRight.X; x++)
+                points.Add(DrawPointOnBuffer(s, new Point(x, bottomRight.Y), Brushes.White));
+            // Left vertical
+            for (double y = upperLeft.Y + 1; y < bottomRight.Y; y++)
+                points.Add(DrawPointOnBuffer(s, new Point(upperLeft.X, y), Brushes.White));
+            // Right vertical
+            for (double y = upperLeft.Y + 1; y < bottomRight.Y; y++)
+                points.Add(DrawPointOnBuffer(s, new Point(bottomRight.X, y), Brushes.White));
+
+            bitmap.WritePixels(new Int32Rect(0, 0, (int)s.Width, (int)s.Height), buffer, 3 * (int)s.Width, 0);
+        }
+        void UndrawWhiteRectangle()
+        {
+            foreach (var point in points)
+            {
+                buffer[point.index] = point.Blue;
+                buffer[point.index + 1] = point.Green;
+                buffer[point.index + 2] = point.Red;
+            }
         }
         #endregion
         void Render1()
@@ -96,7 +128,7 @@ namespace MandelBrot
             this.Title = "Render in progress...";
             foreach (MandelBrotHorizontalLine z in mandelBrotSet.mandelBrotLines)
             {
-                DrawHorizontalLineOnBuffer(buffer, new Size(Math.Round(myDock.ActualWidth), Math.Round(myDock.ActualHeight)), new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
+                DrawHorizontalLineOnBuffer(new Size(Math.Round(myDock.ActualWidth), Math.Round(myDock.ActualHeight)), new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
             }
             bitmap.WritePixels(new Int32Rect(0, 0, width, height), buffer, 3 * width, 0);
             myImage.Source = bitmap;
@@ -140,15 +172,18 @@ namespace MandelBrot
 
             Point p = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
 
-            Label_PixelsXY.Content =  Math.Round(position.X).ToString() + " ; " + Math.Round(position.Y).ToString();
+            Label_PixelsXY.Content = Math.Round(position.X).ToString() + " ; " + Math.Round(position.Y).ToString();
             Label_ReelXY.Content = "r = " + p.X.ToString("E") + " ; i = " + p.Y.ToString("E");
             Label_Divergence.Content = " div = " + iter.ToString() + " mod = " + module.ToString();
+            Label_Count.Content = navigation.Count();
 
             navigation.temporaryBottomRight = new Point(p.X, p.Y);
             if (navigation.status == Status.Capture)
             {
                 Point upperLeft = MandelBrotSet.Real2Pixel(navigation.temporaryTopLeft, navigation.CurrentSelection, canvas);
                 Debug.WriteLine(upperLeft.X + ", " + upperLeft.Y + "  --->   " + position.X + ", " + position.Y);
+                UndrawWhiteRectangle();
+                DrawWhiteRectangle(canvas, upperLeft, position);
                 //if (id_Selection_Rectangle != 0) myCanvas.Children.RemoveAt(id_Selection_Rectangle);
                 //id_Selection_Rectangle = DrawWhiteRectangle(upperLeft, pointOnCanvas);
             }
@@ -175,6 +210,8 @@ namespace MandelBrot
             navigation.Add_Rectangle(navigation.temporaryTopLeft, p);
             navigation.index++;
             mandelBrotSet.FillCollection(navigation, canvas, 80);
+            points.Clear();
+            Label_Count.Content = navigation.Count();
             Render1();
         }
         #region navigation
