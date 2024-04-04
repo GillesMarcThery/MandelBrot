@@ -5,7 +5,9 @@ VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MandelBrot", "MandelBrot\MandelBrot.csproj", "{C2F31200-7707-42FB-97A1-FA5830324D0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test_WritableBitmap", "Test_WritableBitmap\Test_WritableBitmap.csproj", "{874B7F40-86AF-43C4-B675-27128F70943F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test_WritableBitmap", "Test_WritableBitmap\Test_WritableBitmap.csproj", "{874B7F40-86AF-43C4-B675-27128F70943F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test_WPF", "Test_WPF\Test_WPF.csproj", "{49A3C20A-D2B9-4D87-9B49-1A1CC89D20CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{874B7F40-86AF-43C4-B675-27128F70943F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{874B7F40-86AF-43C4-B675-27128F70943F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{874B7F40-86AF-43C4-B675-27128F70943F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49A3C20A-D2B9-4D87-9B49-1A1CC89D20CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49A3C20A-D2B9-4D87-9B49-1A1CC89D20CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49A3C20A-D2B9-4D87-9B49-1A1CC89D20CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49A3C20A-D2B9-4D87-9B49-1A1CC89D20CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

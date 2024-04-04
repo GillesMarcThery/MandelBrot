@@ -41,7 +41,7 @@ namespace MandelBrot
             InitializeComponent();
             mandelBrotSet = new MandelBrotSet();
             mandelBrotColors = new MandelbrotColors(80);
-            myImage.Source = bitmap;
+            //myImage.Source = bitmap;
             timer.Tick += timer_Tick;
         }
         #region Utils
@@ -120,18 +120,19 @@ namespace MandelBrot
         #endregion
         void Render1()
         {
-            int width = (int)myDock.ActualWidth;
-            int height = (int)myDock.ActualHeight;
+            int width = (int)myImage.ActualWidth;
+            int height = (int)myImage.ActualHeight;
             buffer = new byte[3 * width * height];
             bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
 
             this.Title = "Render in progress...";
             foreach (MandelBrotHorizontalLine z in mandelBrotSet.mandelBrotLines)
             {
-                DrawHorizontalLineOnBuffer(new Size(Math.Round(myDock.ActualWidth), Math.Round(myDock.ActualHeight)), new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
+                DrawHorizontalLineOnBuffer(new Size(Math.Round(myImage.ActualWidth), Math.Round(myImage.ActualHeight)), new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
             }
             bitmap.WritePixels(new Int32Rect(0, 0, width, height), buffer, 3 * width, 0);
             myImage.Source = bitmap;
+            Label_Count.Content = navigation.index + 1 + "/" + navigation.Count();
             this.Title = "Render done";
         }
         /// <summary>
@@ -145,13 +146,16 @@ namespace MandelBrot
             timer.Stop();
             timer.Start();
             Debug.WriteLine("Size Changed");
+            Label_Size.Content = (int)myImage.ActualWidth + "x" + (int)myImage.ActualHeight;
         }
         void timer_Tick(object? sender, EventArgs e)
         {
             timer.IsEnabled = false;
 
-            int width = (int)myDock.ActualWidth;
-            int height = (int)myDock.ActualHeight;
+            int width = (int)myImage.ActualWidth;
+            int height = (int)myImage.ActualHeight;
+
+            if (width == 0) return;
 
             //Resize ended (based on 500 ms debaounce time
             this.Title = "Resize done.";
@@ -166,16 +170,11 @@ namespace MandelBrot
             //Debug.WriteLine(toolBarTray_navigation.ActualHeight);
             //Debug.WriteLine(Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight));
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
-            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             double module = mandelBrotSet.DivergenceCalculation(position, navigation.CurrentSelection, canvas, 80).module;
             double iter = mandelBrotSet.DivergenceCalculation(position, navigation.CurrentSelection, canvas, 80).divergence;
 
             Point p = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
-
-            Label_PixelsXY.Content = Math.Round(position.X).ToString() + " ; " + Math.Round(position.Y).ToString();
-            Label_ReelXY.Content = "r = " + p.X.ToString("E") + " ; i = " + p.Y.ToString("E");
-            Label_Divergence.Content = " div = " + iter.ToString() + " mod = " + module.ToString();
-            Label_Count.Content = navigation.Count();
 
             navigation.temporaryBottomRight = new Point(p.X, p.Y);
             if (navigation.status == Status.Capture)
@@ -187,13 +186,31 @@ namespace MandelBrot
                 //if (id_Selection_Rectangle != 0) myCanvas.Children.RemoveAt(id_Selection_Rectangle);
                 //id_Selection_Rectangle = DrawWhiteRectangle(upperLeft, pointOnCanvas);
             }
+            Label_PixelsXY.Content = Math.Round(position.X).ToString() + " ; " + Math.Round(position.Y).ToString();
+            if ((position.X >= mandelBrotSet.Top_Left_pix.X && position.X <= mandelBrotSet.bottom_Right_pix.X) && (position.Y >= mandelBrotSet.Top_Left_pix.Y && position.Y <= mandelBrotSet.bottom_Right_pix.Y))
+            {
+                Label_ReelXY.Content = "r = " + p.X.ToString("E") + " ; i = " + p.Y.ToString("E");
+                Label_Divergence.Content = " div = " + iter.ToString() + " mod = " + module.ToString();
+            }
+            else
+            {
+                Label_ReelXY.Content = "out";
+                Label_Divergence.Content = "out";
+            }
+        }
+
+        private void myImage_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Label_PixelsXY.Content = "out";
+            Label_ReelXY.Content = "out";
+            Label_Divergence.Content = "out";
         }
 
         private void myCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point position = e.GetPosition(this);
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
-            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             navigation.temporaryTopLeft = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
             navigation.status = Status.Capture;
         }
@@ -202,7 +219,7 @@ namespace MandelBrot
         {
             Point position = e.GetPosition(this);
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
-            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             Point p = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
 
             navigation.status = Status.None;
@@ -211,13 +228,12 @@ namespace MandelBrot
             navigation.index++;
             mandelBrotSet.FillCollection(navigation, canvas, 80);
             points.Clear();
-            Label_Count.Content = navigation.Count();
             Render1();
         }
         #region navigation
         private void Button_Rewind_Click(object sender, RoutedEventArgs e)
         {
-            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             if (navigation.Rewind())
             {
                 mandelBrotSet.FillCollection(navigation, canvas, 80);
@@ -227,7 +243,7 @@ namespace MandelBrot
 
         private void Button_Previous_Click(object sender, RoutedEventArgs e)
         {
-            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             if (navigation.Previous())
             {
                 mandelBrotSet.FillCollection(navigation, canvas, 80);
@@ -237,7 +253,7 @@ namespace MandelBrot
 
         private void Button_Next_Click(object sender, RoutedEventArgs e)
         {
-            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             if (navigation.Next())
             {
                 mandelBrotSet.FillCollection(navigation, canvas, 80);
@@ -247,7 +263,7 @@ namespace MandelBrot
 
         private void Button_End_Click(object sender, RoutedEventArgs e)
         {
-            Size canvas = new(myDock.ActualWidth, myDock.ActualHeight);
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             if (navigation.End())
             {
                 mandelBrotSet.FillCollection(navigation, canvas, 80);

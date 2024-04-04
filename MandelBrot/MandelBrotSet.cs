@@ -23,6 +23,9 @@ namespace MandelBrot
     internal class MandelBrotSet
     {
         public List<MandelBrotHorizontalLine> mandelBrotLines = [];
+        public Point Top_Left_pix;
+        public Point bottom_Right_pix;
+
         //public static Point Pixel2Real1(Point point, Rectangle r, Size canvas)
         //{
         //    Point result = new();
@@ -205,8 +208,8 @@ namespace MandelBrot
             Debug.WriteLine("Canvas q=" + s.Height / s.Width);
             Debug.WriteLine("Rectangle q=" + navigation.Height / navigation.Width);
 
-            Point Top_Left_pix = Real2Pixel(navigation.TopLeft, navigation.CurrentSelection, s);
-            Point bottom_Right_pix = Real2Pixel(navigation.BottomRight, navigation.CurrentSelection, s);
+            Top_Left_pix = Real2Pixel(navigation.TopLeft, navigation.CurrentSelection, s);
+            bottom_Right_pix = Real2Pixel(navigation.BottomRight, navigation.CurrentSelection, s);
 
             for (double y = Top_Left_pix.Y; y <= bottom_Right_pix.Y; y++)
             {

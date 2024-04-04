@@ -1,11 +1,11 @@
-﻿<Window x:Class="MandelBrot.MainWindow"
+﻿<Window x:Class="Test_WPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MandelBrot"
+        xmlns:local="clr-namespace:Test_WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="400" Width="600">
+        Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height = "auto" />
@@ -48,7 +48,7 @@
             <Separator />
             <Label Name="Label_Divergence" Content="out"></Label>
         </StatusBar>
-            <!--<Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />-->
-        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave"/>
+        <Image x:Name="myImage" Grid.Row="2" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave"/>
+
     </Grid>
 </Window>
