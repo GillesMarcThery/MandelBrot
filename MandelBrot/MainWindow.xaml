@@ -35,12 +35,18 @@
                 <Button x:Name="Button_Previous" Content="Previous" Click="Button_Previous_Click"/>
                 <Button x:Name="Button_Next" Content="Next" Click="Button_Next_Click"/>
                 <Button x:Name="Button_End" Content="End" Click="Button_End_Click"/>
+                <Separator/>
+                <Slider x:Name="Slider_Divergence" Minimum="4" Maximum="500" Value="20" Width="100" ValueChanged="Slider_Divergence_ValueChanged"/>
             </ToolBar>
         </ToolBarTray>
+        <!--<Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />-->
+        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave"/>
         <StatusBar Grid.Row="3">
             <Label Name="Label_Size" Content="xx"></Label>
             <Separator />
             <Label Name="Label_Count" Content="xx"></Label>
+            <Separator />
+            <Label Name="Label_DivMax" Content="xx"></Label>
             <Separator />
             <Label Name="Label_PixelsXY" Content="out"></Label>
             <Separator />
@@ -48,7 +54,5 @@
             <Separator />
             <Label Name="Label_Divergence" Content="out"></Label>
         </StatusBar>
-            <!--<Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />-->
-        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave"/>
     </Grid>
 </Window>
