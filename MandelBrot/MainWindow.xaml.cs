@@ -41,9 +41,7 @@ namespace MandelBrot
             InitializeComponent();
             mandelBrotSet = new MandelBrotSet();
             mandelBrotColors = new MandelbrotColors(500);
-            //mandelBrotColors.Random();
-            mandelBrotColors.ProgressiveRed();
-            //myImage.Source = bitmap;
+            mandelBrotColors.Random();
             timer.Tick += timer_Tick;
             Label_DivMax.Content = (int)Slider_Divergence.Value;
         }
@@ -125,14 +123,14 @@ namespace MandelBrot
         {
             int width = (int)myImage.ActualWidth;
             int height = (int)myImage.ActualHeight;
-            buffer = new byte[3 * width * height];
-            bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
+            //buffer = new byte[3 * width * height];
+            //bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
 
             this.Title = "Render in progress...";
-            foreach (MandelBrotHorizontalLine z in mandelBrotSet.mandelBrotLines)
-            {
-                DrawHorizontalLineOnBuffer(new Size(Math.Round(myImage.ActualWidth), Math.Round(myImage.ActualHeight)), new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
-            }
+            //foreach (MandelBrotHorizontalLine z in mandelBrotSet.mandelBrotLines)
+            //{
+            //    DrawHorizontalLineOnBuffer(new Size(Math.Round(myImage.ActualWidth), Math.Round(myImage.ActualHeight)), new Point(z.x_start, z.y), new Point(z.x_end, z.y), mandelBrotColors.colors[(int)z.divergence]);
+            //}
             bitmap.WritePixels(new Int32Rect(0, 0, width, height), buffer, 3 * width, 0);
             myImage.Source = bitmap;
             Label_Count.Content = navigation.index + 1 + "/" + navigation.Count();
@@ -157,12 +155,14 @@ namespace MandelBrot
 
             int width = (int)myImage.ActualWidth;
             int height = (int)myImage.ActualHeight;
+            buffer = new byte[3 * width * height];
+            bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
 
             if (width == 0) return;
 
             //Resize ended (based on 500 ms debaounce time
             this.Title = "Resize done.";
-            mandelBrotSet.FillCollection(navigation, new Size(width, height), (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, new Size(width, height), (int)Slider_Divergence.Value);
             //Render();
             Render1();
         }
@@ -233,7 +233,7 @@ namespace MandelBrot
             id_Selection_Rectangle = 0;
             navigation.Add_Selection(navigation.temporaryTopLeft, p);
             navigation.index++;
-            mandelBrotSet.FillCollection(navigation, canvas, (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             points.Clear();
             Render1();
         }
@@ -243,7 +243,7 @@ namespace MandelBrot
             Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             if (navigation.Rewind())
             {
-                mandelBrotSet.FillCollection(navigation, canvas, (int)Slider_Divergence.Value);
+                mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
                 Render1();
             }
         }
@@ -253,7 +253,7 @@ namespace MandelBrot
             Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             if (navigation.Previous())
             {
-                mandelBrotSet.FillCollection(navigation, canvas, (int)Slider_Divergence.Value);
+                mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
                 Render1();
             }
         }
@@ -263,7 +263,7 @@ namespace MandelBrot
             Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             if (navigation.Next())
             {
-                mandelBrotSet.FillCollection(navigation, canvas, (int)Slider_Divergence.Value);
+                mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
                 Render1();
             }
         }
@@ -273,7 +273,7 @@ namespace MandelBrot
             Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             if (navigation.End())
             {
-                mandelBrotSet.FillCollection(navigation, canvas, (int)Slider_Divergence.Value);
+                mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
                 Render1();
             }
         }
@@ -282,10 +282,11 @@ namespace MandelBrot
         {
             if (Label_DivMax != null)
             {
+                Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
                 Label_DivMax.Content = (int)Slider_Divergence.Value;
                 mandelBrotColors.MaxIterations = (int)Slider_Divergence.Value;
                 mandelBrotColors.Random();
-                mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+                mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
                 //Render();
                 Render1();
             }
@@ -293,6 +294,7 @@ namespace MandelBrot
 
         private void myImage_MouseWheel(object sender, MouseWheelEventArgs e)
         {
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             double dX = 0.1 * navigation.Width / 2;
             double dY = 0.1 * navigation.Height / 2;
             Rectangle r = navigation.CurrentSelection;
@@ -311,12 +313,13 @@ namespace MandelBrot
                 r.BottomRight.Y -= dY;
             }
             navigation.Replace_Selection(r);
-            mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             Render1();
         }
 
         private void myImage_KeyDown(object sender, KeyEventArgs e)
         {
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             double dX = 0.1 * navigation.Width / 2;
             double dY = 0.1 * navigation.Height / 2;
             Rectangle r = navigation.CurrentSelection;
@@ -342,21 +345,31 @@ namespace MandelBrot
                     return;
             }
             navigation.Replace_Selection(r);
-            mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             Render1();
         }
 
         private void Button_Reset_Click(object sender, RoutedEventArgs e)
         {
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             navigation.Reset_CurrentSelection();
-            mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             Render1();
         }
 
         private void Button_Suppr_Click(object sender, RoutedEventArgs e)
         {
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             navigation.Suppr_Selection();
-            mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
+            Render1();
+        }
+
+        private void checkBox_Blue_Checked(object sender, RoutedEventArgs e)
+        {
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
+            mandelBrotColors.ProgressiveBlue();
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             Render1();
         }
     }

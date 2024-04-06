@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:MandelBrot"
         mc:Ignorable="d"
         Title="MainWindow" Height="400" Width="600" KeyDown="myImage_KeyDown">
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height = "auto" />
@@ -42,7 +43,20 @@
             </ToolBar>
         </ToolBarTray>
         <!--<Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />-->
-        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave" MouseWheel="myImage_MouseWheel"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <Image x:Name="myImage" Grid.Column="0" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave" MouseWheel="myImage_MouseWheel"/>
+            <StackPanel Grid.Column="1">
+                <Label Content="Color" />
+                <CheckBox x:Name="checkBox_Random" Content="Random"/>
+                <CheckBox x:Name="checkBox_Blue" Content="Blue" Checked="checkBox_Blue_Checked"/>
+                <CheckBox x:Name="checkBox_Red" Content="Red"/>
+                <CheckBox x:Name="checkBox_Green" Content="Green"/>
+            </StackPanel>
+        </Grid>
         <StatusBar Grid.Row="3">
             <Label Name="Label_Size" Content="xx"></Label>
             <Separator />
