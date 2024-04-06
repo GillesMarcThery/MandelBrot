@@ -228,8 +228,10 @@ namespace MandelBrot
             Point p = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
 
             navigation.status = Status.None;
+            if (navigation.temporaryTopLeft.Equals(p))
+                return;
             id_Selection_Rectangle = 0;
-            navigation.Add_Rectangle(navigation.temporaryTopLeft, p);
+            navigation.Add_Selection(navigation.temporaryTopLeft, p);
             navigation.index++;
             mandelBrotSet.FillCollection(navigation, canvas, (int)Slider_Divergence.Value);
             points.Clear();
@@ -282,10 +284,49 @@ namespace MandelBrot
             {
                 Label_DivMax.Content = (int)Slider_Divergence.Value;
                 mandelBrotColors.MaxIterations = (int)Slider_Divergence.Value;
-                mandelBrotColors.ProgressiveTest();
+                mandelBrotColors.Random();
                 mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
                 //Render();
                 Render1();
+            }
+        }
+
+        private void myImage_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            double dX = 0.1 * navigation.Width / 2;
+            double dY = 0.1 * navigation.Height / 2;
+            Rectangle r = navigation.CurrentSelection;
+            if (e.Delta > 0)
+            {
+                r.TopLeft.X += dX;
+                r.BottomRight.X -= dX;
+                r.TopLeft.Y -= dY;
+                r.BottomRight.Y += dY;
+            }
+            else
+            {
+                r.TopLeft.X -= dX;
+                r.BottomRight.X += dX;
+                r.TopLeft.Y += dY;
+                r.BottomRight.Y -= dY;
+            }
+            navigation.Replace_Selection(r);
+            mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+            Render1();
+        }
+
+        private void myImage_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Up:
+                    break;
+                case Key.Down:
+                    break;
+                case Key.Left:
+                    break;
+                case Key.Right:
+                    break;
             }
         }
     }

@@ -36,17 +36,21 @@ namespace MandelBrot
         {
             myCollection.Add(new Rectangle(InitialTopLeftCorner, InitialBottomRightCorner));
         }
-        public void Add_Rectangle(Point p1, Point p2)
+        public void Add_Selection(Point p1, Point p2)
         {
             if (p1 != p2)
                 myCollection.Insert(index + 1, new Rectangle(p1, p2));
         }
-        public void Supp_Rectangle(Point p1, Point p2)
+        public void Supp_Selection(Point p1, Point p2)
         {
             myCollection.Remove(new Rectangle(p1, p2));
             if (index == myCollection.Count) index--;
         }
-
+        public void Replace_Selection(Rectangle r)
+        {
+            myCollection.RemoveAt(index);
+            myCollection.Insert(index, r);
+        }
         public Point TopLeft
         {
             get { return myCollection[index].TopLeft; }

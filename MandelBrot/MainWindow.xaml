@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MandelBrot"
         mc:Ignorable="d"
-        Title="MainWindow" Height="400" Width="600">
+        Title="MainWindow" Height="400" Width="600" KeyDown="myImage_KeyDown">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height = "auto" />
@@ -40,7 +40,7 @@
             </ToolBar>
         </ToolBarTray>
         <!--<Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />-->
-        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave"/>
+        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave" MouseWheel="myImage_MouseWheel"/>
         <StatusBar Grid.Row="3">
             <Label Name="Label_Size" Content="xx"></Label>
             <Separator />
