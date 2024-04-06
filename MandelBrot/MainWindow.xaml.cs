@@ -317,17 +317,47 @@ namespace MandelBrot
 
         private void myImage_KeyDown(object sender, KeyEventArgs e)
         {
+            double dX = 0.1 * navigation.Width / 2;
+            double dY = 0.1 * navigation.Height / 2;
+            Rectangle r = navigation.CurrentSelection;
             switch (e.Key)
             {
-                case Key.Up:
-                    break;
                 case Key.Down:
+                    r.TopLeft.Y -= dY;
+                    r.BottomRight.Y -= dY;
+                    break;
+                case Key.Up:
+                    r.TopLeft.Y += dY;
+                    r.BottomRight.Y += dY;
                     break;
                 case Key.Left:
+                    r.TopLeft.X -= dX;
+                    r.BottomRight.X -= dX;
                     break;
                 case Key.Right:
+                    r.TopLeft.X += dX;
+                    r.BottomRight.X += dX;
                     break;
+                default:
+                    return;
             }
+            navigation.Replace_Selection(r);
+            mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+            Render1();
+        }
+
+        private void Button_Reset_Click(object sender, RoutedEventArgs e)
+        {
+            navigation.Reset_CurrentSelection();
+            mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+            Render1();
+        }
+
+        private void Button_Suppr_Click(object sender, RoutedEventArgs e)
+        {
+            navigation.Suppr_Selection();
+            mandelBrotSet.FillCollection(navigation, new Size(myImage.ActualWidth, myImage.ActualHeight), (int)Slider_Divergence.Value);
+            Render1();
         }
     }
     #endregion
