@@ -40,7 +40,7 @@ namespace MandelBrot
         {
             InitializeComponent();
             mandelBrotSet = new MandelBrotSet();
-            mandelBrotColors = new MandelbrotColors((int)Slider_Divergence.Value);
+            mandelBrotColors = new MandelbrotColors((int)Slider_Divergence.Value, ColorMethod.Random, slider_intensity.Value);
             mandelBrotColors.Random();
             timer.Tick += timer_Tick;
             Label_DivMax.Content = (int)Slider_Divergence.Value;
@@ -138,6 +138,7 @@ namespace MandelBrot
             myImage.Source = bitmap;
             Label_Count.Content = navigation.index + 1 + "/" + navigation.Count();
             this.Title = "Render done";
+            Label_DivMax.ToolTip = "Min: " + mandelBrotSet.Divergence_min + " ; Max: " + mandelBrotSet.Divergence_max;
         }
         /// <summary>
         ///  Si la divergence est au max, on pourrait ne rien mettre et laisser le background color...
@@ -230,6 +231,8 @@ namespace MandelBrot
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
             Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
             Point p = MandelBrotSet.Pixel2Real(position, navigation.CurrentSelection, canvas);
+            ColorMethod colorMethod;
+            Enum.TryParse<ColorMethod>(ComboBox_ColorPicker.SelectedItem.ToString(), out colorMethod);
 
             navigation.status = Status.None;
             if (navigation.temporaryTopLeft.Equals(p))
@@ -237,6 +240,8 @@ namespace MandelBrot
             id_Selection_Rectangle = 0;
             navigation.Add_Selection(navigation.temporaryTopLeft, p);
             navigation.index++;
+            mandelBrotSet.FillCollection_Pass1(navigation, canvas, (int)Slider_Divergence.Value);
+            mandelBrotColors.ChangeColors(mandelBrotSet.Divergences_amplitude, colorMethod, slider_intensity.Value);
             mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             points.Clear();
             Render1();
@@ -290,8 +295,8 @@ namespace MandelBrot
                 Enum.TryParse<ColorMethod>(ComboBox_ColorPicker.SelectedItem.ToString(), out colorMethod);
                 Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
                 Label_DivMax.Content = (int)Slider_Divergence.Value;
-                //mandelBrotColors.MaxIterations = (int)Slider_Divergence.Value;
-                mandelBrotColors.ChangeColors((int)Slider_Divergence.Value, colorMethod, slider_intensity.Value);
+                mandelBrotSet.FillCollection_Pass1(navigation, canvas, (int)Slider_Divergence.Value);
+                mandelBrotColors.ChangeColors(mandelBrotSet.Divergences_amplitude, colorMethod, slider_intensity.Value);
                 mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
                 //Render();
                 Render1();

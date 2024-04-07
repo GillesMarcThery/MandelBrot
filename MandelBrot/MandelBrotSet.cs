@@ -26,7 +26,12 @@ namespace MandelBrot
         //public List<MandelBrotHorizontalLine> mandelBrotLines = [];
         public Point Top_Left_pix;
         public Point bottom_Right_pix;
-
+        public int Divergence_min;
+        public int Divergence_max;
+        public int Divergences_amplitude
+        {
+            get { return Divergence_max - Divergence_min + 1; }
+        }
         //public static Point Pixel2Real1(Point point, Rectangle r, Size canvas)
         //{
         //    Point result = new();
@@ -231,6 +236,42 @@ namespace MandelBrot
                 }
             }
         }
+        /// <summary>
+        /// FillCollection_Pass1 : calc Divergence_min and Divergence_max
+        /// </summary>
+        /// <param name="navigation">rectangle of complex map to compute</param>
+        /// <param name="s">size of canvas or image</param>
+        /// <param name="max_iterations">maximum of iterations</param>
+        public void FillCollection_Pass1(MandelBrot_Navigation navigation, Size s, int max_iterations)
+        {
+            Debug.WriteLine("Canvas q=" + s.Height / s.Width);
+            Debug.WriteLine("Rectangle q=" + navigation.Height / navigation.Width);
+
+            Top_Left_pix = Real2Pixel(navigation.TopLeft, navigation.CurrentSelection, s);
+            bottom_Right_pix = Real2Pixel(navigation.BottomRight, navigation.CurrentSelection, s);
+            Point firstPointOfLine_Pixel;
+            Point endPointOfLine_Pixel;
+            int divergence;
+            Divergence_max = 0;
+            Divergence_min = max_iterations;
+            for (double y = Top_Left_pix.Y; y <= bottom_Right_pix.Y; y++)
+            {
+                firstPointOfLine_Pixel = new Point(Top_Left_pix.X, y);
+                divergence = (int)DivergenceCalculation(firstPointOfLine_Pixel, navigation.CurrentSelection, s, max_iterations).divergence;
+                for (double x = Top_Left_pix.X; x < bottom_Right_pix.X; x++)
+                {
+                    endPointOfLine_Pixel = new Point(x, y);
+                    ResultDivergenceCalculation r = DivergenceCalculation(endPointOfLine_Pixel, navigation.CurrentSelection, s, max_iterations);
+                    if (divergence < Divergence_min) Divergence_min = divergence;
+                    if (divergence > Divergence_max) Divergence_max = divergence;
+                    if (r.divergence != divergence)
+                    {
+                        divergence = (int)r.divergence;
+                    }
+                }
+            }
+        }
+
         public void FillCollection(byte[] buffer, MandelBrot_Navigation navigation, MandelbrotColors mandelbrotColors, Size s, int max_iterations)
         {
             //mandelBrotLines.Clear();
@@ -243,7 +284,6 @@ namespace MandelBrot
             Point firstPointOfLine_Pixel;
             Point endPointOfLine_Pixel;
             int divergence;
-
             for (double y = Top_Left_pix.Y; y <= bottom_Right_pix.Y; y++)
             {
                 firstPointOfLine_Pixel = new Point(Top_Left_pix.X, y);
@@ -260,7 +300,7 @@ namespace MandelBrot
                         if (divergence != max_iterations)
                         {
                             //mandelBrotLines.Add(tmp);
-                            DrawHorizontalLineOnBuffer(buffer, (int)s.Width, firstPointOfLine_Pixel, endPointOfLine_Pixel, mandelbrotColors.colors[divergence]);
+                            DrawHorizontalLineOnBuffer(buffer, (int)s.Width, firstPointOfLine_Pixel, endPointOfLine_Pixel, mandelbrotColors.colors[divergence - Divergence_min]);
                         }
                         //tmp = new MandelBrotHorizontalLine(endPointOfLine_Pixel, 0, r.divergence);
                         firstPointOfLine_Pixel = endPointOfLine_Pixel;
@@ -271,7 +311,7 @@ namespace MandelBrot
                 if (divergence != max_iterations)
                 {
                     //mandelBrotLines.Add(tmp);
-                    DrawHorizontalLineOnBuffer(buffer, (int)s.Width, firstPointOfLine_Pixel, endPointOfLine_Pixel, mandelbrotColors.colors[divergence]);
+                    DrawHorizontalLineOnBuffer(buffer, (int)s.Width, firstPointOfLine_Pixel, endPointOfLine_Pixel, mandelbrotColors.colors[divergence - Divergence_min]);
                 }
             }
         }

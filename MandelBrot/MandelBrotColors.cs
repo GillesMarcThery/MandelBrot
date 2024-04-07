@@ -24,10 +24,10 @@ namespace MandelBrot
         {
             set { total_Colors = value; }  // set method
         }
-        public MandelbrotColors(int n)
+        public MandelbrotColors(int n, ColorMethod method, double factor)
         {
             this.total_Colors = n;
-
+            Picker(method, factor);
         }
         public void ChangeColors(int n, ColorMethod method, double factor)
         {
