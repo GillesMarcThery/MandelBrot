@@ -40,10 +40,13 @@ namespace MandelBrot
         {
             InitializeComponent();
             mandelBrotSet = new MandelBrotSet();
-            mandelBrotColors = new MandelbrotColors(500);
+            mandelBrotColors = new MandelbrotColors((int)Slider_Divergence.Value);
             mandelBrotColors.Random();
             timer.Tick += timer_Tick;
             Label_DivMax.Content = (int)Slider_Divergence.Value;
+            foreach (string name in Enum.GetNames(typeof(ColorMethod)))
+                ComboBox_ColorPicker.Items.Add(name);
+            ComboBox_ColorPicker.SelectedIndex = 0;
         }
         #region Utils
         /// <summary>
@@ -155,14 +158,15 @@ namespace MandelBrot
 
             int width = (int)myImage.ActualWidth;
             int height = (int)myImage.ActualHeight;
+            Size canvas = new(width, height);
             buffer = new byte[3 * width * height];
             bitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
 
-            if (width == 0) return;
+            //if (width == 0) return;
 
             //Resize ended (based on 500 ms debaounce time
             this.Title = "Resize done.";
-            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, new Size(width, height), (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             //Render();
             Render1();
         }
@@ -282,10 +286,12 @@ namespace MandelBrot
         {
             if (Label_DivMax != null)
             {
+                ColorMethod colorMethod;
+                Enum.TryParse<ColorMethod>(ComboBox_ColorPicker.SelectedItem.ToString(), out colorMethod);
                 Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
                 Label_DivMax.Content = (int)Slider_Divergence.Value;
-                mandelBrotColors.MaxIterations = (int)Slider_Divergence.Value;
-                mandelBrotColors.Random();
+                //mandelBrotColors.MaxIterations = (int)Slider_Divergence.Value;
+                mandelBrotColors.ChangeColors((int)Slider_Divergence.Value, colorMethod, slider_intensity.Value);
                 mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
                 //Render();
                 Render1();
@@ -364,11 +370,23 @@ namespace MandelBrot
             mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             Render1();
         }
-
-        private void checkBox_Blue_Checked(object sender, RoutedEventArgs e)
+        private void ComboBox_ColorPicker_Selected(object sender, RoutedEventArgs e)
         {
             Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
-            mandelBrotColors.ProgressiveBlue();
+            if (canvas.Width == 0 || canvas.Height == 0) return;
+            _ = Enum.TryParse<ColorMethod>(ComboBox_ColorPicker.SelectedItem.ToString(), out ColorMethod colorMethod);
+            mandelBrotColors.Picker(colorMethod, slider_intensity.Value);
+            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
+            Render1();
+        }
+
+        private void slider_intensity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (myImage == null) return;
+            Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
+            if (canvas.Width == 0 || canvas.Height == 0) return;
+            _ = Enum.TryParse<ColorMethod>(ComboBox_ColorPicker.SelectedItem.ToString(), out ColorMethod colorMethod);
+            mandelBrotColors.Picker(colorMethod, slider_intensity.Value);
             mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
             Render1();
         }

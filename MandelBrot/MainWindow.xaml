@@ -40,10 +40,15 @@
                 <Button x:Name="Button_Suppr" Content="Suppr" Click="Button_Suppr_Click"/>
                 <Separator/>
                 <Slider x:Name="Slider_Divergence" Minimum="4" Maximum="500" Value="20" Width="100" Focusable="False" ValueChanged="Slider_Divergence_ValueChanged"/>
+                <Separator/>
+                <ComboBox x:Name="ComboBox_ColorPicker" SelectionChanged="ComboBox_ColorPicker_Selected"/>
+                <Slider x:Name="slider_intensity" Minimum="1" Maximum="255" Value="20" Width="100" Focusable="False" ValueChanged="slider_intensity_ValueChanged"/>
+
             </ToolBar>
         </ToolBarTray>
         <!--<Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />-->
-        <Grid Grid.Row="2">
+        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave" MouseWheel="myImage_MouseWheel"/>
+        <!--<Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="auto"/>
@@ -51,12 +56,10 @@
             <Image x:Name="myImage" Grid.Column="0" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave" MouseWheel="myImage_MouseWheel"/>
             <StackPanel Grid.Column="1">
                 <Label Content="Color" />
-                <CheckBox x:Name="checkBox_Random" Content="Random"/>
-                <CheckBox x:Name="checkBox_Blue" Content="Blue" Checked="checkBox_Blue_Checked"/>
-                <CheckBox x:Name="checkBox_Red" Content="Red"/>
-                <CheckBox x:Name="checkBox_Green" Content="Green"/>
+                <ComboBox x:Name="ComboBox_ColorPicker" SelectionChanged="ComboBox_ColorPicker_Selected"/>
+                <Slider x:Name="slider_intensity" Minimum="1" Maximum="255" Value="20" Width="100" Focusable="False" ValueChanged="slider_intensity_ValueChanged"/>
             </StackPanel>
-        </Grid>
+        </Grid>-->
         <StatusBar Grid.Row="3">
             <Label Name="Label_Size" Content="xx"></Label>
             <Separator />
