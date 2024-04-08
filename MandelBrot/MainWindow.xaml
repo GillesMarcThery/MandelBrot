@@ -25,7 +25,8 @@
                 <Separator />
                 <MenuItem Header="_Exit" />
             </MenuItem>
-            <MenuItem Header="_Parameter">
+            <MenuItem Header="_Parameters">
+                <MenuItem Header="_Iterations" Click="MenuItem_Click" />
             </MenuItem>
             <MenuItem Header="_About">
             </MenuItem>

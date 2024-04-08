@@ -91,7 +91,7 @@ namespace MandelBrot
             for (double y = upperLeft.Y + 1; y < bottomRight.Y; y++)
                 points.Add(DrawPointOnBuffer(s, new Point(bottomRight.X, y), Brushes.White));
 
-            bitmap.WritePixels(new Int32Rect(0, 0, (int)s.Width, (int)s.Height), buffer, 3 * (int)s.Width, 0);
+            bitmap.WritePixels(new Int32Rect(0, 0, s.Width, s.Height), buffer, 3 * s.Width, 0);
         }
         void UndrawWhiteRectangle()
         {
@@ -152,7 +152,7 @@ namespace MandelBrot
             //Debug.WriteLine(Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight));
             position.Y -= Math.Round(menu.ActualHeight + toolBarTray_navigation.ActualHeight);
             Size canvas = new(myImage.ActualWidth, myImage.ActualHeight);
-            if (position.Y == (int)canvas.Height)
+            if (position.Y == canvas.Height)
                 return;
             double module = MandelBrotSet.DivergenceCalculation(position, navigation.CurrentSelection, canvas, (int)Slider_Divergence.Value).module;
             double iter = MandelBrotSet.DivergenceCalculation(position, navigation.CurrentSelection, canvas, (int)Slider_Divergence.Value).divergence;
@@ -328,6 +328,15 @@ namespace MandelBrot
             mandelBrotColors.Picker(colorMethod, slider_intensity.Value);
             Render();
         }
+        #endregion
+        #region Menu
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Window_Parameters window_Parameter = new((int)Slider_Divergence.Minimum, (int)Slider_Divergence.Maximum);
+            if (window_Parameter.ShowDialog() == false) return;
+            Slider_Divergence.Minimum= window_Parameter.GetMinIterations();
+            Slider_Divergence.Maximum= window_Parameter.GetMaxIterations();
+        }
+        #endregion
     }
-    #endregion
 }

@@ -5,10 +5,10 @@ using System.Windows.Media.Media3D;
 
 namespace MandelBrot
 {
-    public struct ResultDivergenceCalculation(double module, double divergence)
+    public struct ResultDivergenceCalculation(double module, int divergence)
     {
         public double module = module;
-        public double divergence = divergence;
+        public int divergence = divergence;
     }
 
     internal class MandelBrotSet
@@ -78,7 +78,7 @@ namespace MandelBrot
         {
             double z_r = 0;
             double z_i = 0;
-            double i = 0;
+            int i = 0;
             double module;
             double c_r;
             double c_i;
@@ -119,13 +119,12 @@ namespace MandelBrot
                 {
                     Point p = new(x, y);
                     ResultDivergenceCalculation r = DivergenceCalculation(p, navigation.CurrentSelection, s, max_iterations);
-                    if (r.divergence < Divergence_min) Divergence_min = (int)r.divergence;
-                    if (r.divergence > Divergence_max) Divergence_max = (int)r.divergence;
-                    divergences_buffer[i] = (int)r.divergence;
-                    //if ((int)r.divergence != max_iterations)
-                    //    divergences_buffer[i] = (int)r.divergence;
-                    //else
-                    //    divergences_buffer[i] = -1;
+                    if (r.divergence < Divergence_min) Divergence_min = r.divergence;
+                    if (r.divergence > Divergence_max) Divergence_max = r.divergence;
+                    if (r.divergence == max_iterations)
+                        divergences_buffer[i] = -1;
+                    else
+                        divergences_buffer[i] = r.divergence;
                     i += sizeof(int);
                 }
             }
@@ -133,14 +132,18 @@ namespace MandelBrot
         public void FillCollection(byte[] buffer, MandelbrotColors mandelbrotColors, Size s)
         {
             int i, j = 0;
-            for (int k = 0; k < 3 * (int)s.Width * (int)s.Height; k++) { buffer[k] = 0; }
+            Color c;
+            for (int k = 0; k < 3 * s.Width * s.Height; k++) { buffer[k] = 0; }
             for (double y = Top_Left_pix.Y; y <= bottom_Right_pix.Y; y++)
             {
                 for (double x = Top_Left_pix.X; x <= bottom_Right_pix.X; x++)
                 {
                     Point p = new(x, y);
-                    Color c = mandelbrotColors.colors[this.divergences_buffer[j] - Divergence_min].Color;
-                    i = (int)(3 * ((int)s.Width * p.Y + p.X));
+                    if (divergences_buffer[j] == -1)
+                        c = Colors.Black;
+                    else
+                        c = mandelbrotColors.colors[divergences_buffer[j] - Divergence_min].Color;
+                    i = (int)(3 * (s.Width * p.Y + p.X));
                     buffer[i] = c.B;
                     buffer[i + 1] = c.G;
                     buffer[i + 2] = c.R;

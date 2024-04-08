@@ -1,0 +1,28 @@
+﻿<Window x:Class="MandelBrot.Window_Parameters"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MandelBrot"
+        mc:Ignorable="d"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        Topmost ="True"
+        Margin="10,10,10,10"
+        Title="Parameters" >
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Minimum iterations :" VerticalAlignment="Center" />
+                <TextBox x:Name="TextBox_MinIterations" VerticalAlignment="Center" Text="20" MinWidth="100" TextChanged="TextBox_MinIterations_TextChanged"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Minimum iterations :" VerticalAlignment="Center" />
+                <TextBox x:Name="TextBox_MaxIterations" VerticalAlignment="Center" Text="500" MinWidth="100" TextChanged="TextBox_MaxIterations_TextChanged"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="button_Ok" Content="Ok" Click="Button_Ok_Click" Margin="5"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
