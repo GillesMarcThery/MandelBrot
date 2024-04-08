@@ -64,7 +64,7 @@ namespace MandelBrot
         public void Random()
         {
             colors.Clear();
-            Random rnd = new Random();
+            Random rnd = new();
             for (int i = 0; i < total_Colors; i++)
                 colors.Add(new SolidColorBrush(Color.FromRgb((byte)rnd.Next(0, 255), (byte)rnd.Next(0, 255), (byte)rnd.Next(0, 255))));
         }

@@ -29,7 +29,7 @@ namespace MandelBrot
         //Point InitialBottomRightCorner = new(-0.5, -0.47);
         public Point temporaryTopLeft;
         public Point temporaryBottomRight;
-        List<Rectangle> myCollection = [];
+        readonly List<Rectangle> myCollection = [];
         public int index = 0;
         public Status status = Status.None;
         public MandelBrot_Navigation()

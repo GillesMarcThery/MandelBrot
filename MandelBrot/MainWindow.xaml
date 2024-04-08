@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MandelBrot"
         mc:Ignorable="d"
-        Title="MainWindow" Height="400" Width="600" KeyDown="myImage_KeyDown">
+        Title="MainWindow" Height="400" Width="600" KeyDown="MyImage_KeyDown">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -42,12 +42,12 @@
                 <Slider x:Name="Slider_Divergence" Minimum="4" Maximum="500" Value="20" Width="100" Focusable="False" ValueChanged="Slider_Divergence_ValueChanged"/>
                 <Separator/>
                 <ComboBox x:Name="ComboBox_ColorPicker" SelectionChanged="ComboBox_ColorPicker_Selected"/>
-                <Slider x:Name="slider_intensity" Minimum="1" Maximum="255" Value="20" Width="100" Focusable="False" ValueChanged="slider_intensity_ValueChanged"/>
+                <Slider x:Name="slider_intensity" Minimum="1" Maximum="255" Value="20" Width="100" Focusable="False" ValueChanged="Slider_intensity_ValueChanged"/>
 
             </ToolBar>
         </ToolBarTray>
         <!--<Canvas Name="myCanvas" Background="DarkBlue" SizeChanged="myCanvas_SizeChanged"  MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" IsEnabled="False" Visibility="Hidden" />-->
-        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="myCanvas_SizeChanged" MouseMove="myCanvas_MouseMove" MouseLeftButtonDown="myCanvas_MouseLeftButtonDown" MouseLeftButtonUp="myCanvas_MouseLeftButtonUp" MouseLeave="myImage_MouseLeave" MouseWheel="myImage_MouseWheel"/>
+        <Image x:Name="myImage" Grid.Row="2" Stretch="Fill" Source="C:\\Users\\gille\\OneDrive\\Pictures\\us_1.jpg" SizeChanged="MyCanvas_SizeChanged" MouseMove="MyCanvas_MouseMove" MouseLeftButtonDown="MyCanvas_MouseLeftButtonDown" MouseLeftButtonUp="MyCanvas_MouseLeftButtonUp" MouseLeave="MyImage_MouseLeave" MouseWheel="MyImage_MouseWheel"/>
         <!--<Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />
