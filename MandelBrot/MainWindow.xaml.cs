@@ -240,9 +240,11 @@ namespace MandelBrot
             id_Selection_Rectangle = 0;
             navigation.Add_Selection(navigation.temporaryTopLeft, p);
             navigation.index++;
-            mandelBrotSet.FillCollection_Pass1(navigation, canvas, (int)Slider_Divergence.Value);
+            //mandelBrotSet.FillCollection_Pass1(navigation, canvas, (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection_Pass10(navigation, canvas, (int)Slider_Divergence.Value);
             mandelBrotColors.ChangeColors(mandelBrotSet.Divergences_amplitude, colorMethod, slider_intensity.Value);
-            mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
+            //mandelBrotSet.FillCollection(buffer, navigation, mandelBrotColors, canvas, (int)Slider_Divergence.Value);
+            mandelBrotSet.FillCollection1(buffer, mandelBrotColors, canvas);
             points.Clear();
             Render1();
         }

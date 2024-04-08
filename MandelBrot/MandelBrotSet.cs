@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 
 namespace MandelBrot
 {
@@ -26,12 +27,22 @@ namespace MandelBrot
         //public List<MandelBrotHorizontalLine> mandelBrotLines = [];
         public Point Top_Left_pix;
         public Point bottom_Right_pix;
+        public int Width
+        {
+            get { return (int)bottom_Right_pix.X - (int)Top_Left_pix.X + 1; }
+        }
+        public int Height
+        {
+            get { return (int)bottom_Right_pix.Y - (int)Top_Left_pix.Y + 1; }
+        }
         public int Divergence_min;
         public int Divergence_max;
         public int Divergences_amplitude
         {
             get { return Divergence_max - Divergence_min + 1; }
         }
+        private int[]? divergences_buffer;
+
         //public static Point Pixel2Real1(Point point, Rectangle r, Size canvas)
         //{
         //    Point result = new();
@@ -271,7 +282,50 @@ namespace MandelBrot
                 }
             }
         }
+        public void FillCollection_Pass10(MandelBrot_Navigation navigation, Size s, int max_iterations)
+        {
+            Top_Left_pix = Real2Pixel(navigation.TopLeft, navigation.CurrentSelection, s);
+            bottom_Right_pix = Real2Pixel(navigation.BottomRight, navigation.CurrentSelection, s);
+            divergences_buffer = new int[sizeof(int) * Width * Height];
 
+            int i = 0;
+            Divergence_max = 0;
+            Divergence_min = max_iterations;
+            for (double y = Top_Left_pix.Y; y <= bottom_Right_pix.Y; y++)
+            {
+                for (double x = Top_Left_pix.X; x <= bottom_Right_pix.X; x++)
+                {
+                    Point p = new Point(x, y);
+                    ResultDivergenceCalculation r = DivergenceCalculation(p, navigation.CurrentSelection, s, max_iterations);
+                    if (r.divergence < Divergence_min) Divergence_min = (int)r.divergence;
+                    if (r.divergence > Divergence_max) Divergence_max = (int)r.divergence;
+                    divergences_buffer[i] = (int)r.divergence;
+                    //if ((int)r.divergence != max_iterations)
+                    //    divergences_buffer[i] = (int)r.divergence;
+                    //else
+                    //    divergences_buffer[i] = -1;
+                    i += sizeof(int);
+                }
+            }
+        }
+        public void FillCollection1(byte[] buffer, MandelbrotColors mandelbrotColors, Size s)
+        {
+            int i, j = 0;
+            for (int k = 0; k < 3 * (int)s.Width * (int)s.Height; k++) { buffer[k] = 0; }
+            for (double y = Top_Left_pix.Y; y <= bottom_Right_pix.Y; y++)
+            {
+                for (double x = Top_Left_pix.X; x <= bottom_Right_pix.X; x++)
+                {
+                    Point p = new Point(x, y);
+                    Color c = mandelbrotColors.colors[this.divergences_buffer[j] - Divergence_min].Color;
+                    i = (int)(3 * ((int)s.Width * p.Y + p.X));
+                    buffer[i] = c.B;
+                    buffer[i + 1] = c.G;
+                    buffer[i + 2] = c.R;
+                    j += sizeof(int);
+                }
+            }
+        }
         public void FillCollection(byte[] buffer, MandelBrot_Navigation navigation, MandelbrotColors mandelbrotColors, Size s, int max_iterations)
         {
             //mandelBrotLines.Clear();
