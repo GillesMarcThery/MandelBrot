@@ -68,6 +68,8 @@
             <Separator />
             <Label Name="Label_DivMax" Content="xx"></Label>
             <Separator />
+            <Label Name="Label_Delay" Content="xx"></Label>
+            <Separator />
             <Label Name="Label_PixelsXY" Content="out"></Label>
             <Separator />
             <Label Name="Label_ReelXY" Content="out"></Label>

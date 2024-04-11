@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -10,18 +12,38 @@ namespace MandelBrot
         public double module = module;
         public int divergence = divergence;
     }
-
+    struct PixelPosition
+    {
+        public int X;
+        public int Y;
+        public PixelPosition(int x, int y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
+        public PixelPosition(double x, double y)
+        {
+            this.X = (int)x;
+            this.Y = (int)y;
+        }
+        public PixelPosition(Point p)
+        {
+            this.X = (int)p.X;
+            this.Y = (int)p.Y;
+        }
+        public override readonly string ToString() { return X + ", " + Y + ")"; }
+    }
     internal class MandelBrotSet
     {
-        public Point Top_Left_pix;
-        public Point bottom_Right_pix;
+        public PixelPosition Top_Left_pix;
+        public PixelPosition bottom_Right_pix;
         public int Width
         {
-            get { return (int)bottom_Right_pix.X - (int)Top_Left_pix.X + 1; }
+            get { return bottom_Right_pix.X - Top_Left_pix.X + 1; }
         }
         public int Height
         {
-            get { return (int)bottom_Right_pix.Y - (int)Top_Left_pix.Y + 1; }
+            get { return bottom_Right_pix.Y - Top_Left_pix.Y + 1; }
         }
         public int Divergence_min;
         public int Divergence_max;
@@ -30,7 +52,8 @@ namespace MandelBrot
             get { return Divergence_max - Divergence_min + 1; }
         }
         private int[] divergences_buffer = [];
-        public static Point Pixel2Real(Point point, Rectangle r, Size canvas)
+        private int threads_controler = 0;
+        public static Point Pixel2Real(PixelPosition point, Rectangle r, Size canvas)
         {
             Point result = new();
             double yMiddle = (r.TopLeft.Y + r.BottomRight.Y) / 2;
@@ -48,21 +71,21 @@ namespace MandelBrot
             }
             return result;
         }
-        public static Point Real2Pixel(Point point, Rectangle r, Size s)
+        public static PixelPosition Real2Pixel(Point point, Rectangle r, Size s)
         {
-            Point result = new();
+            PixelPosition result = new();
             double yMiddle = (r.TopLeft.Y + r.BottomRight.Y) / 2;
             double xMiddle = (r.TopLeft.X + r.BottomRight.X) / 2;
 
             if (s.Height * r.Width / r.Height <= s.Width) // écran plus allongé que la sélection
             {
-                result.X = Math.Round(((point.X - xMiddle) * ((s.Height - 1) / r.Height)) + s.Width / 2);
-                result.Y = Math.Round((point.Y - r.TopLeft.Y) * ((1 - s.Height) / r.Height));
+                result.X = (int)(((point.X - xMiddle) * ((s.Height - 1) / r.Height)) + s.Width / 2);
+                result.Y = (int)((point.Y - r.TopLeft.Y) * ((1 - s.Height) / r.Height));
             }
             else
             {
-                result.X = Math.Round((point.X - r.TopLeft.X) * ((s.Width - 1) / r.Width));
-                result.Y = Math.Round(s.Height / 2 - ((point.Y - yMiddle) * ((s.Width - 1) / r.Width)));
+                result.X = (int)((point.X - r.TopLeft.X) * ((s.Width - 1) / r.Width));
+                result.Y = (int)(s.Height / 2 - ((point.Y - yMiddle) * ((s.Width - 1) / r.Width)));
             }
             return result;
         }
@@ -74,7 +97,7 @@ namespace MandelBrot
         /// <param name="canvas">canvas</param>
         /// <param name="max_iterations">maximum iterations</param>
         /// <returns></returns>
-        public static ResultDivergenceCalculation DivergenceCalculation(Point point, Rectangle r, Size canvas, int max_iterations)
+        public static ResultDivergenceCalculation DivergenceCalculation(PixelPosition point, Rectangle r, Size canvas, int max_iterations)
         {
             double z_r = 0;
             double z_i = 0;
@@ -106,10 +129,11 @@ namespace MandelBrot
         /// <param name="max_iterations">maximum of iterations</param>
         public void FillCollection_Pass1(MandelBrot_Navigation navigation, Size s, int max_iterations)
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             Top_Left_pix = Real2Pixel(navigation.TopLeft, navigation.CurrentSelection, s);
             bottom_Right_pix = Real2Pixel(navigation.BottomRight, navigation.CurrentSelection, s);
-            divergences_buffer = new int[sizeof(int) * Width * Height];
-
+            //divergences_buffer = new int[sizeof(int) * Width * Height];
+            divergences_buffer = new int[Width * Height];
             int i = 0;
             Divergence_max = 0;
             Divergence_min = max_iterations;
@@ -117,7 +141,7 @@ namespace MandelBrot
             {
                 for (double x = Top_Left_pix.X; x <= bottom_Right_pix.X; x++)
                 {
-                    Point p = new(x, y);
+                    PixelPosition p = new(x, y);
                     ResultDivergenceCalculation r = DivergenceCalculation(p, navigation.CurrentSelection, s, max_iterations);
                     if (r.divergence < Divergence_min) Divergence_min = r.divergence;
                     if (r.divergence > Divergence_max) Divergence_max = r.divergence;
@@ -125,9 +149,79 @@ namespace MandelBrot
                         divergences_buffer[i] = -1;
                     else
                         divergences_buffer[i] = r.divergence;
-                    i += sizeof(int);
+                    i++;
                 }
             }
+            stopwatch.Stop();
+            Debug.WriteLine("FillCollection_Pass1 : " + stopwatch.ElapsedMilliseconds);
+        }
+        public void Calc_Div_Buffer_Top(MandelBrot_Navigation navigation, Size s, int max_iterations)
+        {
+            Top_Left_pix = Real2Pixel(navigation.TopLeft, navigation.CurrentSelection, s);
+            bottom_Right_pix = Real2Pixel(navigation.BottomRight, navigation.CurrentSelection, s);
+            divergences_buffer = new int[Width * Height];
+            int q = Height / 12;
+            int r = Height % 12;
+            int blocSize = Width * q;
+            PixelPosition p1, p2;
+            Thread myThread;
+            threads_controler = 0;
+            int total_thread = 12;
+            Divergence_max = 0;
+            Divergence_min = max_iterations;
+            //Thread[] myThread1 = new Thread[6];
+
+            //p1 = new(Top_Left_pix.X, Top_Left_pix.Y);
+            //p2 = new(bottom_Right_pix.X, Top_Left_pix.Y + q);
+            //myThread = new Thread(() => Calc_Div_Buffer(1, navigation.CurrentSelection, p1, p2, s, max_iterations));
+            //myThread.Start();
+            for (int i = 1; i <= 12; i++)
+            {
+                int temp = i;
+                //p1 = new(Top_Left_pix.X, Top_Left_pix.Y + (i - 1) * q + 1);
+                //p2 = new(bottom_Right_pix.X, Top_Left_pix.Y + q * i);
+                PixelPosition p1_temp = new(Top_Left_pix.X, Top_Left_pix.Y + (i - 1) * q); ;
+                PixelPosition p2_temp = new(bottom_Right_pix.X, Top_Left_pix.Y + q * i - 1);
+                myThread = new Thread(() => Calc_Div_Buffer(temp, blocSize, navigation.CurrentSelection, p1_temp, p2_temp, s, max_iterations));
+                myThread.Start();
+            }
+            if (r != 0)
+            {
+                p1 = new(Top_Left_pix.X, Top_Left_pix.Y + 12 * q);
+                p2 = new(bottom_Right_pix.X, bottom_Right_pix.Y);
+                myThread = new Thread(() => Calc_Div_Buffer(13, blocSize, navigation.CurrentSelection, p1, p2, s, max_iterations));
+                myThread.Start();
+                total_thread++;
+            }
+            while (threads_controler < total_thread)
+            {
+                //Debug.WriteLine("Waiting ");
+            }
+        }
+        public void Calc_Div_Buffer(int index, int blocSize, Rectangle rect, PixelPosition p1, PixelPosition p2, Size canvas, int max_iterations)
+        {
+            int w = ((int)p2.X - (int)p1.X + 1);
+            int h = ((int)p2.Y - (int)p1.Y + 1);
+            int i = (index - 1) * blocSize;
+            Debug.WriteLine("Calc_Div_Buffer " + index + " start --> p1 = " + p1.ToString() + " end --> p2 = " + p2.ToString() + " ; i = " + i + " ; w = " + w + " ; h = " + h);
+
+            for (double y = p1.Y; y <= p2.Y; y++)
+            {
+                for (double x = p1.X; x <= p2.X; x++)
+                {
+                    PixelPosition p = new(x, y);
+                    ResultDivergenceCalculation r = DivergenceCalculation(p, rect, canvas, max_iterations);
+                    if (r.divergence < Divergence_min) Divergence_min = r.divergence;
+                    if (r.divergence > Divergence_max) Divergence_max = r.divergence;
+                    if (r.divergence == max_iterations)
+                        divergences_buffer[i] = -1;
+                    else
+                        divergences_buffer[i] = r.divergence;
+                    i++;
+                }
+            }
+            threads_controler++;
+            //Debug.WriteLine("Calc_Div_Buffer " + index + " finished");
         }
         public void FillCollection(byte[] buffer, MandelbrotColors mandelbrotColors, Size s)
         {
@@ -142,12 +236,34 @@ namespace MandelBrot
                     if (divergences_buffer[j] == -1)
                         c = Colors.Black;
                     else
-                        c = mandelbrotColors.colors[divergences_buffer[j] - Divergence_min].Color;
+                    {
+                        int d = divergences_buffer[j];
+                        try
+                        {
+                            c = mandelbrotColors.colors[d - Divergence_min].Color;
+                        }
+                        catch (Exception e)
+                        {
+                            int k;
+                            using (StreamWriter writer = new StreamWriter("./tmp.csv"))
+                            {
+                                int count = 0;
+
+                                for (k = 0; k < divergences_buffer.Length; k ++)
+                                {
+                                    writer.Write(divergences_buffer[k] + ";");
+                                    count++;
+                                    if (count == 296) { writer.Write(Environment.NewLine); count = 0; }
+                                }
+                            }
+                            Environment.Exit(0);
+                        }
+                    }
                     i = (int)(3 * (s.Width * p.Y + p.X));
                     buffer[i] = c.B;
                     buffer[i + 1] = c.G;
                     buffer[i + 2] = c.R;
-                    j += sizeof(int);
+                    j++;
                 }
             }
         }
